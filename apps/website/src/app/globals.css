@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color: #1D2939;
+    background-color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+.prohealth-hero-bg {
+  background: linear-gradient(180deg, #F0F6FB 0%, #EAF2F9 60%, #FFFFFF 100%);
+}
+
+.prohealth-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #E4E7EC;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prohealth-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 15px 35px rgba(43, 120, 198, 0.12);
+  border-color: #CBD5E1;
+}
+
+.prohealth-pill-btn {
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.prohealth-pill-btn:active {
+  transform: scale(0.98);
+}
+
+.prohealth-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .prohealth-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .prohealth-container {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+
+

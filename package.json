@@ -1,0 +1,48 @@
+{
+  "name": "hospital-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Enterprise Domain-Driven Microservices Hospital Management Platform & ProHealth Website",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/start-all.js",
+    "dev:website": "npm run --workspace=apps/website dev",
+    "dev:erp": "npm run --workspace=apps/erp dev",
+    "dev:gateway": "npm run --workspace=apps/api-gateway dev",
+    "build": "npm run build:packages && npm run build:services && npm run build:apps",
+    "build:packages": "npm run --workspace=packages/contracts build && npm run --workspace=packages/events build && npm run --workspace=packages/audit-client build && npm run --workspace=packages/database build",
+    "build:services": "npm run --workspace=apps/appointment-service build && npm run --workspace=apps/patient-service build && npm run --workspace=apps/clinical-service build && npm run --workspace=apps/auth-service build && npm run --workspace=apps/audit-service build && npm run --workspace=apps/api-gateway build",
+    "build:apps": "npm run --workspace=apps/website build && npm run --workspace=apps/erp build",
+    "test": "node scripts/test-e2e.js",
+    "test:security": "node scripts/test-security.js",
+    "audit:verify": "node scripts/verify-audit-chain.js",
+    "db:neon:init": "node scripts/neon-init-schema.js",
+    "db:neon:verify": "node scripts/verify-neon-queries.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "typescript": "^5.4.5"
+  },
+  "keywords": [
+    "hospital",
+    "microservices",
+    "healthcare",
+    "audit-logging",
+    "hipaa",
+    "nats",
+    "nextjs",
+    "react"
+  ],
+  "author": "Hospital Engineering Team",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "dotenv": "^17.4.2",
+    "helmet": "^8.3.0",
+    "zod": "^4.6.4"
+  }
+}

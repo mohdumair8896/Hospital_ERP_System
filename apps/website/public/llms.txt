@@ -1,0 +1,34 @@
+# ProHealth Academic Medical Center & Research Hospital
+
+> Premier academic health system delivering robotic surgery, Level 1 trauma care, and patient-centered medicine.
+
+## Institutional Profile
+- **Institution Name**: ProHealth Academic Medical Center
+- **Address**: 123 Healthcare Blvd, Medical District, New York, NY 10016
+- **Emergency Hotline (24/7)**: 876-256-876 (Ambulance / Trauma)
+- **Main Switchboard**: +1 (555) 019-2831
+- **Inquiries Email**: care@prohealth.hospital
+- **Accreditation**: Joint Commission International (JCI Gold Seal ID: JCI-AMC-2026-9941), HIMSS Stage 7 Certified EHR, Malcolm Baldrige National Quality Award
+- **Capacity**: 450+ Inpatient Beds, 8 Robotic Surgical Suites, Rooftop Trauma Helipad
+
+## Clinical Institutes & Departments
+1. **Cardiology & Heart Center**: Interventional cardiology, transcatheter valve replacement (TAVR), cardiac electrophysiology mapping, 24/7 STEMI cardiac catheterization.
+2. **Neurology & Brain Sciences**: Comprehensive Stroke Center, mechanical thrombectomy, deep brain stimulation (DBS), 3T MRI neuroimaging.
+3. **Emergency & Level 1 Trauma**: 24-hour rapid triage, mechanical CPR, resuscitative thoracotomy, massive transfusion protocol.
+4. **Pediatrics & Neonatal ICU (NICU)**: Level IV NICU, neonatal ECMO, pediatric critical care, child development center.
+5. **Orthopedics & Robotic Surgery**: Mako robotic-arm joint arthroplasty, minimally invasive spine surgery, sports medicine.
+6. **Gynecology & Maternal Health**: Family-centered labor & delivery, high-risk maternal-fetal medicine, robotic myomectomy.
+
+## Key Medical Leadership
+- **Dr. Arthur Vance, MD, FACEP**: Hospital Medical Director & Trauma Chair
+- **Dr. Elena Rostova, MD, PhD**: Chief of Clinical Neurology & Stroke Director
+- **Dr. Sarah Patel, MD, FACC**: Director of Interventional Cardiology
+- **Dr. Marcus Chen, MD, FAAP**: Chair of Pediatric Medicine & Neonatology
+- **Dr. James Wilson, MD, FAAOS**: Head of Orthopedic Surgery & Robotic Arthroplasty
+- **Eleanor Campbell, JD, CHC**: Chief Compliance & Privacy Officer
+
+## Patient Services & Policies
+- **Appointment Booking**: Online scheduling available 24/7 at http://localhost:3001/appointments
+- **Patient Portal (ERP)**: Electronic medical records, lab results, and physician messaging at http://localhost:5173
+- **Notice of Privacy Practices**: Strict compliance with HIPAA § 164.528, complete cryptographic audit log chaining, and zero-trust record isolation.
+- **Refund Policy**: 100% full refund for appointment deposits cancelled with 24 hours advance notice; automated insurance overpayment reconciliation within 14 business days.

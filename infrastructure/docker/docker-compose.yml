@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # PERSISTENT DATA INFRASTRUCTURE
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: hospital-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hospital_secure_password_2026!
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: hospital-nats
+    restart: always
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222" # NATS client port
+      - "8222:8222" # HTTP monitoring dashboard
+    volumes:
+      - nats_data:/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: hospital-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # ==========================================
+  # DOMAIN MICROSERVICES
+  # ==========================================
+  audit-service:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/audit-service
+    container_name: hospital-audit-service
+    restart: always
+    environment:
+      PORT: 4005
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgresql://postgres:hospital_secure_password_2026!@postgres:5432/audit_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    ports:
+      - "4005:4005"
+
+  auth-service:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/auth-service
+    container_name: hospital-auth-service
+    restart: always
+    environment:
+      PORT: 4004
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgresql://postgres:hospital_secure_password_2026!@postgres:5432/auth_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4004:4004"
+
+  patient-service:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/patient-service
+    container_name: hospital-patient-service
+    restart: always
+    environment:
+      PORT: 4001
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgresql://postgres:hospital_secure_password_2026!@postgres:5432/patient_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4001:4001"
+
+  appointment-service:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/appointment-service
+    container_name: hospital-appointment-service
+    restart: always
+    environment:
+      PORT: 4002
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgresql://postgres:hospital_secure_password_2026!@postgres:5432/appointment_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4002:4002"
+
+  clinical-service:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/clinical-service
+    container_name: hospital-clinical-service
+    restart: always
+    environment:
+      PORT: 4003
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgresql://postgres:hospital_secure_password_2026!@postgres:5432/clinical_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4003:4003"
+
+  # ==========================================
+  # API GATEWAY
+  # ==========================================
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: apps/api-gateway
+    container_name: hospital-api-gateway
+    restart: always
+    environment:
+      PORT: 4000
+      AUTH_SERVICE_URL: http://auth-service:4004
+      PATIENT_SERVICE_URL: http://patient-service:4001
+      APPOINTMENT_SERVICE_URL: http://appointment-service:4002
+      CLINICAL_SERVICE_URL: http://clinical-service:4003
+      AUDIT_SERVICE_URL: http://audit-service:4005
+    depends_on:
+      - auth-service
+      - patient-service
+      - appointment-service
+      - clinical-service
+      - audit-service
+    ports:
+      - "4000:4000"
+
+volumes:
+  postgres_data:
+  nats_data:
+  redis_data:
