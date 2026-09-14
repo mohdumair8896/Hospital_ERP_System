@@ -66,7 +66,26 @@ export class AuditDatabase {
     `);
   }
 
+  private appendQueue: Promise<any> = Promise.resolve();
+
   public async appendRecord(
+    entry: Omit<AuditRecord, 'id' | 'sequenceNumber' | 'prevRecordHash' | 'recordHash'>
+  ): Promise<AuditRecord> {
+    return new Promise<AuditRecord>((resolve, reject) => {
+      this.appendQueue = this.appendQueue
+        .then(async () => {
+          try {
+            const res = await this.processAppendRecord(entry);
+            resolve(res);
+          } catch (err) {
+            reject(err);
+          }
+        })
+        .catch(reject);
+    });
+  }
+
+  private async processAppendRecord(
     entry: Omit<AuditRecord, 'id' | 'sequenceNumber' | 'prevRecordHash' | 'recordHash'>
   ): Promise<AuditRecord> {
     if (process.env.DATABASE_URL) {

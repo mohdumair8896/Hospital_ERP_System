@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { ClinicalDatabase } from './database.js';
 import { createEventBus, EventSubjects } from '@hospital/events';
-import { AuditClient, createAuditMiddleware } from '@hospital/audit-client';
+import { AuditClient } from '@hospital/audit-client';
 import { ClinicalEncounterFinalizedEvent, VitalSigns, PrescriptionItem } from '@hospital/contracts';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4003;
@@ -17,7 +17,7 @@ async function bootstrap() {
   const eventBus = await createEventBus(NATS_URL);
   const auditClient = new AuditClient('clinical-service', eventBus);
 
-  app.use(createAuditMiddleware(auditClient));
+  // Domain and Encounter-specific audits are logged explicitly with clinical rationale
 
   app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'UP', service: 'clinical-service', time: new Date().toISOString() });

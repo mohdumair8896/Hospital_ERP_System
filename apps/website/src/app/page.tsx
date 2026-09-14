@@ -15,6 +15,7 @@ import EmergencyBanner from '../components/EmergencyBanner';
 import Footer from '../components/Footer';
 import EmergencyFAB from '../components/EmergencyFAB';
 import AppointmentBookingModal from '../components/AppointmentBookingModal';
+import SymptomTriagePopover from '../components/SymptomTriagePopover';
 
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -36,6 +37,12 @@ export default function HomePage() {
   const handleSelectDepartment = (deptId: string) => {
     setSelectedDepartmentId(deptId);
     setSelectedDoctorId(undefined);
+    setBookingOpen(true);
+  };
+
+  const handleScheduleFromTriage = (doctorId: string, departmentId: string) => {
+    setSelectedDoctorId(doctorId);
+    setSelectedDepartmentId(departmentId);
     setBookingOpen(true);
   };
 
@@ -80,7 +87,10 @@ export default function HomePage() {
       {/* 13. Floating Emergency Ambulance FAB */}
       <EmergencyFAB />
 
-      {/* 14. 5-Step Progressive Disclosure Modal Booking Flow */}
+      {/* 14. Interactive Symptom Triage Questionnaire Popover & Doctor Matcher */}
+      <SymptomTriagePopover onScheduleDirectly={handleScheduleFromTriage} />
+
+      {/* 15. 5-Step Progressive Disclosure Modal Booking Flow */}
       <AppointmentBookingModal
         isOpen={bookingOpen}
         onClose={() => setBookingOpen(false)}

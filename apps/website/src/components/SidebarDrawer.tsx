@@ -170,15 +170,14 @@ export default function SidebarDrawer({ isOpen, onClose, onOpenBooking }: Sideba
               <span>Book Appointment Online</span>
             </button>
 
-            <a
-              href="http://localhost:5173"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/timetable"
+              onClick={onClose}
               className="w-full py-2.5 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-200 transition-all"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-prohealth-primary" />
-              <span>Hospital Staff & Patient Portal (ERP)</span>
-            </a>
+              <Clock className="w-3.5 h-3.5 text-prohealth-primary" />
+              <span>Doctor Timetable &amp; Schedules</span>
+            </Link>
           </div>
         </div>
 

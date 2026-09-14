@@ -60,7 +60,7 @@ export default function CookiePolicyPage() {
             1. What Are Cookies and Local Web Storage?
           </h2>
           <p>
-            Cookies are small cryptographic text files placed on your browser or device when visiting web domains. They allow our systems to recognize returning users, preserve patient authentication states, prevent cross-site request forgery (CSRF), and maintain session integrity across our microservice mesh.
+            Cookies are small cryptographic text files placed on your browser or device when visiting web domains. They allow our systems to recognize returning users, preserve patient authentication states, prevent cross-site request forgery (CSRF), and maintain session integrity across our secure healthcare services.
           </p>
         </section>
 

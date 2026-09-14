@@ -130,7 +130,7 @@ export default function PrivacyPolicyPage() {
             <li><strong>AES-256 Encryption at Rest:</strong> All database files are encrypted using hardware security modules (HSM).</li>
             <li><strong>TLS 1.3 in Transit:</strong> High-grade transport encryption across all client-to-gateway network sessions.</li>
             <li><strong>Cryptographic SHA-256 Hash Chaining:</strong> All clinical reads and modifications emit append-only tamper-evident audit records.</li>
-            <li><strong>Record-Level Security (RLS):</strong> Enforced microservice boundaries prevent cross-patient record access (IDOR defense).</li>
+            <li><strong>Record-Level Security (RLS):</strong> Enforced architectural security boundaries prevent cross-patient record access (IDOR defense).</li>
           </ul>
         </section>
 

@@ -11,6 +11,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'cn': path.resolve(__dirname, './src/lib/utils.ts'),
+      '@untitledui/icons': path.resolve(__dirname, './src/components/base/icons/untitledui.tsx'),
+      '@hospital/contracts': path.resolve(__dirname, '../../packages/contracts/src/index.ts'),
     },
   },
   server: {

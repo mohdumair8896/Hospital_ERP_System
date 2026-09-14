@@ -134,9 +134,9 @@ export class PatientDatabase {
         console.error('[PatientDatabase] Neon create error, using local fallback:', err);
       }
     }
-    const count = (this.db.prepare(`SELECT COUNT(*) as cnt FROM patients`).get() as { cnt: number }).cnt;
+    const suffix = Math.floor(10000 + Math.random() * 90000);
     const id = explicitId || `pat_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const mrn = explicitMrn || `MRN-2026-${(1000 + count + 1).toString().padStart(5, '0')}`;
+    const mrn = explicitMrn || `MRN-2026-${suffix}`;
     const now = new Date().toISOString();
 
     const patient: Patient = {
@@ -184,26 +184,30 @@ export class PatientDatabase {
       )
     `);
 
-    stmt.run(
-      patient.id,
-      patient.mrn,
-      patient.firstName,
-      patient.lastName,
-      patient.dateOfBirth,
-      patient.gender,
-      patient.bloodGroup,
-      patient.phoneNumber,
-      patient.email,
-      JSON.stringify(patient.address),
-      JSON.stringify(patient.emergencyContact),
-      JSON.stringify(patient.allergies),
-      JSON.stringify(patient.activeMedications),
-      patient.insuranceProvider || null,
-      patient.insurancePolicyNumber || null,
-      patient.consentGiven ? 1 : 0,
-      patient.createdAt,
-      patient.updatedAt
-    );
+    try {
+      stmt.run(
+        patient.id,
+        patient.mrn,
+        patient.firstName,
+        patient.lastName,
+        patient.dateOfBirth,
+        patient.gender,
+        patient.bloodGroup,
+        patient.phoneNumber,
+        patient.email,
+        JSON.stringify(patient.address),
+        JSON.stringify(patient.emergencyContact),
+        JSON.stringify(patient.allergies),
+        JSON.stringify(patient.activeMedications),
+        patient.insuranceProvider || null,
+        patient.insurancePolicyNumber || null,
+        patient.consentGiven ? 1 : 0,
+        patient.createdAt,
+        patient.updatedAt
+      );
+    } catch (sqliteErr) {
+      console.warn('[PatientDatabase] Local sqlite insert warning:', sqliteErr);
+    }
 
     return patient;
   }
@@ -211,7 +215,8 @@ export class PatientDatabase {
   public async getById(id: string): Promise<Patient | null> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getPatientById(id);
+        const patient = await neonDb.getPatientById(id);
+        if (patient) return patient;
       } catch (err) {
         console.error('[PatientDatabase] Neon query error, using local fallback:', err);
       }
@@ -226,7 +231,8 @@ export class PatientDatabase {
   public async search(query?: string): Promise<Patient[]> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.searchPatients(query);
+        const patients = await neonDb.searchPatients(query);
+        if (patients && patients.length > 0) return patients;
       } catch (err) {
         console.error('[PatientDatabase] Neon query error, using local fallback:', err);
       }

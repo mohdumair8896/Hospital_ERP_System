@@ -20,8 +20,8 @@ export default function FAQSection() {
       a: 'Please bring a valid government-issued photo ID (Driver’s License or Passport), your active insurance card, any previous medical records or diagnostic imaging CDs (X-ray, MRI, CT), and a comprehensive list of current prescribed medications and dosages.',
     },
     {
-      q: 'How does the Patient Portal (ERP) protect my medical records and test results?',
-      a: 'Our Patient Portal employs enterprise zero-trust security and Record-Level Security (RLS). Every access to your Electronic Protected Health Information (ePHI) is logged into an immutable database audit engine secured with SHA-256 cryptographic hash chaining in compliance with HIPAA § 164.312(b).',
+      q: 'How does ProHealth protect my medical records and test results?',
+      a: 'ProHealth employs enterprise clinical security and encrypted data protection. Every access to your Electronic Protected Health Information (ePHI) is logged into an immutable database audit engine secured with SHA-256 cryptographic verification in compliance with HIPAA § 164.312(b).',
     },
     {
       q: 'What is the difference between regular outpatient clinics and the Emergency Department?',

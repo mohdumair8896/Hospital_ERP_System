@@ -3,18 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Doctor } from '@hospital/contracts';
-import { Star, Calendar, Clock, ArrowRight, Award, Stethoscope } from 'lucide-react';
+import { Star, Calendar, Clock, ArrowRight, Award, Stethoscope, Users } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarBadge } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface DoctorDirectoryProps {
   onSelectDoctor: (doctorId: string) => void;
 }
+
+import { API_BASE_URL } from '@/lib/api';
 
 export default function DoctorDirectory({ onSelectDoctor }: DoctorDirectoryProps) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filteredSpecialty, setFilteredSpecialty] = useState<string>('ALL');
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/v1/appointments/doctors')
+    fetch(`${API_BASE_URL}/api/v1/appointments/doctors`)
       .then(res => res.json())
       .then(data => setDoctors(data))
       .catch(() => {
@@ -69,7 +73,7 @@ export default function DoctorDirectory({ onSelectDoctor }: DoctorDirectoryProps
             consultationFee: 180,
             availableDays: ['Tuesday', 'Wednesday', 'Thursday'],
             availableSlots: ['10:00 AM', '11:30 AM', '02:30 PM'],
-            avatarUrl: 'https://images.unsplash.com/photo-1594824813576-a364802c63ef?auto=format&fit=crop&q=80&w=400',
+            avatarUrl: 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&q=80&w=400',
             bio: 'Expert in cerebrovascular stroke rehabilitation and complex neuro-degenerative disorders.',
             phone: '+1 (555) 345-6789',
             email: 'elena.rostova@hospital.com'
@@ -136,8 +140,29 @@ export default function DoctorDirectory({ onSelectDoctor }: DoctorDirectoryProps
           </div>
         </div>
 
-        {/* Doctors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Clinical Team AvatarGroup Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-white/80 backdrop-blur-sm border rounded-2xl p-4 shadow-xs max-w-xl mx-auto mb-10">
+          <AvatarGroup>
+            {doctors.slice(0, 4).map((d) => (
+              <Avatar key={d.id}>
+                <AvatarImage src={d.avatarUrl} alt={d.name} />
+                <AvatarFallback>{d.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+            ))}
+            <AvatarGroupCount>+{Math.max(0, doctors.length - 4 || 12)}</AvatarGroupCount>
+          </AvatarGroup>
+          <div className="text-center sm:text-left">
+            <span className="text-xs font-bold text-foreground block">
+              {doctors.length || 24}+ Clinical Attending Specialists On Call Today
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              Verified Board Certification • 99.4% Patient Satisfaction
+            </span>
+          </div>
+        </div>
+
+        {/* Doctors Grid - Balanced 3-column layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedDoctors.map(doc => (
             <div
               key={doc.id}

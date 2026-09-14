@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { DEPARTMENTS, DOCTORS, BLOG_POSTS } from '../data/hospitalData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'http://localhost:3001';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
 
   const staticRoutes = [
     '',

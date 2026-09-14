@@ -295,7 +295,7 @@ export const DOCTORS: DoctorData[] = [
     consultationFee: 240,
     availableDays: ['Tuesday', 'Thursday', 'Saturday'],
     availableSlots: ['09:30 AM', '11:00 AM', '02:30 PM', '04:00 PM'],
-    avatarUrl: 'https://images.unsplash.com/photo-1594824813571-638f02638520?auto=format&fit=crop&q=80&w=600',
+    avatarUrl: 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&q=80&w=600',
     npiNumber: '1839201948',
     education: [
       'MD / PhD Combined Medical Scientist Training — Johns Hopkins University',

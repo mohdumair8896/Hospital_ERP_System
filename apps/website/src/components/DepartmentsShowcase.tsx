@@ -28,12 +28,14 @@ const iconMap: Record<string, React.ReactNode> = {
   Bone: <Bone className="w-6 h-6 text-sky-500" />,
 };
 
+import { API_BASE_URL } from '@/lib/api';
+
 export default function DepartmentsShowcase({ onSelectDepartment }: DepartmentsShowcaseProps) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/v1/appointments/departments')
+    fetch(`${API_BASE_URL}/api/v1/appointments/departments`)
       .then(res => res.json())
       .then(data => {
         setDepartments(data);

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { AppointmentDatabase } from './database.js';
 import { createEventBus, EventSubjects } from '@hospital/events';
-import { AuditClient, createAuditMiddleware } from '@hospital/audit-client';
+import { AuditClient } from '@hospital/audit-client';
 import { 
   AppointmentCreatedEvent, 
   BookAppointmentDto, 
@@ -21,7 +21,7 @@ async function bootstrap() {
   const eventBus = await createEventBus(NATS_URL);
   const auditClient = new AuditClient('appointment-service', eventBus);
 
-  app.use(createAuditMiddleware(auditClient));
+  // Ingress HTTP auditing is handled by API Gateway.
 
   app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'UP', service: 'appointment-service', time: new Date().toISOString() });

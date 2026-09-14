@@ -11,6 +11,27 @@ export const LoginSchema = z.object({
   password: z.string().min(1, 'Password is required').max(100),
 });
 
+export const CreateUserSchema = z.object({
+  name: z.string().trim().min(2, 'Name is required').max(100),
+  username: z.string().trim().min(3, 'Username must be at least 3 characters').max(50),
+  email: z.string().trim().email('Valid email is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  role: z.enum([
+    'ADMIN',
+    'CHIEF_MEDICAL_OFFICER',
+    'DOCTOR',
+    'NURSE',
+    'RECEPTIONIST',
+    'PHARMACIST',
+    'LAB_TECHNICIAN',
+    'COMPLIANCE_AUDITOR',
+    'PATIENT',
+  ]),
+  departmentId: z.string().optional(),
+  doctorId: z.string().optional(),
+  patientId: z.string().optional(),
+});
+
 export const AppointmentBookingSchema = z
   .object({
     doctorId: z.string().min(1, 'Doctor ID is required'),
@@ -272,6 +293,23 @@ export function requireRoles(...allowedRoles: UserRole[]) {
 export function enforceRecordLevelSecurity(req: Request, res: Response, next: NextFunction) {
   const path = req.path;
   const user = (req as AuthenticatedRequest).user;
+
+  // 0. Staff Provisioning Lockdown: ONLY ADMIN can create users
+  if (path === '/api/v1/auth/users' && req.method === 'POST') {
+    if (!user) {
+      return res.status(401).json({
+        error: 'Unauthorized: Staff credential provisioning requires administrative authentication',
+        code: 'AUTH_REQUIRED',
+      });
+    }
+    if (user.role !== 'ADMIN') {
+      return res.status(403).json({
+        error: 'Forbidden: Only hospital administrators can provision staff credentials',
+        code: 'ADMIN_REQUIRED',
+      });
+    }
+    return next();
+  }
 
   // 1. Audit route lockdown: ONLY ADMIN & COMPLIANCE_AUDITOR
   if (path.startsWith('/api/v1/audit')) {

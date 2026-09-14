@@ -16,8 +16,12 @@ async function verifyQueries() {
   const patients = await sql`SELECT id, mrn, first_name, last_name, phone_number FROM patients;`;
   console.table(patients);
 
-  console.log('\n4. Querying audit genesis block from Neon:');
-  const audit = await sql`SELECT id, sequence_number, actor_name, action, description FROM audit_records;`;
+  console.log('\n4. Querying users from Neon:');
+  const users = await sql`SELECT id, username, email, role, patient_id, doctor_id FROM users ORDER BY role ASC;`;
+  console.table(users);
+
+  console.log('\n5. Querying audit genesis block from Neon:');
+  const audit = await sql`SELECT id, sequence_number, actor_name, action, description FROM audit_records ORDER BY sequence_number DESC LIMIT 5;`;
   console.table(audit);
 }
 

@@ -38,13 +38,11 @@ export default function TopEmergencyBar() {
             </a>
             
             <a
-              href="http://localhost:5173"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/timetable"
               className="flex items-center gap-1 text-sky-100 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded text-[11px] font-medium transition-colors border border-white/20"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-              <span>ERP &amp; Doctor Portal</span>
+              <span>Doctor Timetable &amp; OPD</span>
               <ArrowRight className="w-3 h-3 text-sky-300" />
             </a>
           </div>

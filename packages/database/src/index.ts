@@ -9,6 +9,7 @@ import {
   CreatePatientDto, 
   ClinicalEncounter, 
   UserSession,
+  UserRole,
   AuditRecord,
   AuditSearchQuery
 } from '@hospital/contracts';
@@ -21,9 +22,14 @@ export function getDatabaseUrl(): string {
   return url;
 }
 
+let _cachedNeonSql: NeonQueryFunction<false, false> | null = null;
+
 export function getNeonSql(): NeonQueryFunction<false, false> {
-  const url = getDatabaseUrl();
-  return neon(url);
+  if (!_cachedNeonSql) {
+    const url = getDatabaseUrl();
+    _cachedNeonSql = neon(url);
+  }
+  return _cachedNeonSql;
 }
 
 // ----------------------------------------------------
@@ -190,9 +196,8 @@ export async function createAppointment(data: {
   consultationFee: number;
 }): Promise<Appointment> {
   const sql = getNeonSql();
-  const countRes = await sql`SELECT count(*)::int as cnt FROM appointments;`;
-  const count = countRes[0]?.cnt || 0;
-  const appointmentNumber = `APT-2026-${(8800 + count + 1).toString()}`;
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+  const appointmentNumber = `APT-2026-${suffix}`;
   const id = `apt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const now = new Date().toISOString();
 
@@ -333,10 +338,9 @@ export async function getPatientById(id: string): Promise<Patient | null> {
 
 export async function createPatient(data: CreatePatientDto): Promise<Patient> {
   const sql = getNeonSql();
-  const countRes = await sql`SELECT count(*)::int as cnt FROM patients;`;
-  const count = countRes[0]?.cnt || 0;
+  const suffix = Math.floor(10000 + Math.random() * 90000);
   const id = `pat_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  const mrn = `MRN-2026-${(1000 + count + 1).toString().padStart(5, '0')}`;
+  const mrn = `MRN-2026-${suffix}`;
   const now = new Date().toISOString();
 
   const address = {
@@ -452,10 +456,9 @@ export async function getEncounterById(id: string): Promise<ClinicalEncounter | 
 
 export async function createClinicalEncounter(data: any): Promise<ClinicalEncounter> {
   const sql = getNeonSql();
-  const countRes = await sql`SELECT count(*)::int as cnt FROM clinical_encounters;`;
-  const count = countRes[0]?.cnt || 0;
+  const suffix = Math.floor(1000 + Math.random() * 9000);
   const id = `enc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  const encounterNumber = `ENC-2026-${(5000 + count + 1).toString()}`;
+  const encounterNumber = `ENC-2026-${suffix}`;
   const now = new Date().toISOString();
 
   await sql`
@@ -500,9 +503,13 @@ export async function createClinicalEncounter(data: any): Promise<ClinicalEncoun
 // ----------------------------------------------------
 export async function authenticateUser(usernameOrEmail: string, passwordAttempt: string): Promise<UserSession | null> {
   const sql = getNeonSql();
+  const candidateUsernames = [usernameOrEmail];
+  if (usernameOrEmail === 'dr_sarah') candidateUsernames.push('doc_sarah');
+  if (usernameOrEmail === 'doc_sarah') candidateUsernames.push('dr_sarah');
+
   const rows = await sql`
     SELECT * FROM users 
-    WHERE (username = ${usernameOrEmail} OR email = ${usernameOrEmail})
+    WHERE (username = ANY(${candidateUsernames}) OR email = ${usernameOrEmail} OR LOWER(username) = LOWER(${usernameOrEmail}))
     LIMIT 1;
   `;
   if (rows.length === 0) return null;
@@ -565,6 +572,42 @@ export async function getAllUsers(): Promise<UserSession[]> {
     doctorId: user.doctor_id || undefined,
     patientId: user.patient_id || undefined,
   }));
+}
+
+export async function createUser(userData: {
+  id?: string;
+  username: string;
+  password: string;
+  name: string;
+  email: string;
+  role: string;
+  departmentId?: string;
+  doctorId?: string;
+  patientId?: string;
+}): Promise<UserSession> {
+  const sql = getNeonSql();
+  const id = userData.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date().toISOString();
+  
+  await sql`
+    INSERT INTO users (
+      id, username, password_hash, name, email, role, department_id, doctor_id, patient_id, active, created_at
+    ) VALUES (
+      ${id}, ${userData.username}, ${userData.password}, ${userData.name}, ${userData.email}, ${userData.role},
+      ${userData.departmentId || null}, ${userData.doctorId || null}, ${userData.patientId || null}, 1, ${now}
+    );
+  `;
+
+  return {
+    id,
+    username: userData.username,
+    name: userData.name,
+    email: userData.email,
+    role: userData.role as UserRole,
+    departmentId: userData.departmentId || undefined,
+    doctorId: userData.doctorId || undefined,
+    patientId: userData.patientId || undefined,
+  };
 }
 
 // ----------------------------------------------------

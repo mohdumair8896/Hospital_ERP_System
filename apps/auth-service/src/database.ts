@@ -142,7 +142,8 @@ export class AuthDatabase {
   public async authenticate(username: string, password: string): Promise<UserSession | null> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.authenticateUser(username, password);
+        const session = await neonDb.authenticateUser(username, password);
+        if (session) return session;
       } catch (err) {
         console.error('[AuthDatabase] Neon authenticate error, using local fallback:', err);
       }
@@ -168,7 +169,8 @@ export class AuthDatabase {
   public async getById(id: string): Promise<UserSession | null> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getUserById(id);
+        const session = await neonDb.getUserById(id);
+        if (session) return session;
       } catch (err) {
         console.error('[AuthDatabase] Neon getById error, using local fallback:', err);
       }
@@ -191,7 +193,8 @@ export class AuthDatabase {
   public async getAll(): Promise<UserSession[]> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getAllUsers();
+        const users = await neonDb.getAllUsers();
+        if (users && users.length > 0) return users;
       } catch (err) {
         console.error('[AuthDatabase] Neon getAll error, using local fallback:', err);
       }
@@ -207,5 +210,65 @@ export class AuthDatabase {
       doctorId: row.doctor_id || undefined,
       patientId: row.patient_id || undefined
     }));
+  }
+
+  public async createUser(userData: {
+    id?: string;
+    username: string;
+    password: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    departmentId?: string;
+    doctorId?: string;
+    patientId?: string;
+  }): Promise<UserSession> {
+    const id = userData.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const now = new Date().toISOString();
+
+    // Mirror to local SQLite
+    try {
+      this.db.prepare(`
+        INSERT INTO users (
+          id, username, password_hash, name, email, role, department_id, doctor_id, patient_id, active, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        id, userData.username, userData.password, userData.name, userData.email, userData.role,
+        userData.departmentId || null, userData.doctorId || null, userData.patientId || null,
+        1, now
+      );
+    } catch (err) {
+      console.warn('[AuthDatabase] Local SQLite insert warning:', err);
+    }
+
+    // Persist to Neon Postgres if available
+    if (process.env.DATABASE_URL) {
+      try {
+        return await (neonDb as any).createUser({
+          id,
+          username: userData.username,
+          password: userData.password,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          departmentId: userData.departmentId,
+          doctorId: userData.doctorId,
+          patientId: userData.patientId,
+        });
+      } catch (err) {
+        console.error('[AuthDatabase] Neon createUser error, falling back to local:', err);
+      }
+    }
+
+    return {
+      id,
+      username: userData.username,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role,
+      departmentId: userData.departmentId,
+      doctorId: userData.doctorId,
+      patientId: userData.patientId,
+    };
   }
 }

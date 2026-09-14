@@ -267,19 +267,33 @@ async function initNeonSchema() {
     console.log('  ✓ Seeded 3 patient demographics');
   }
 
-  // Seed Users
-  const userCount = await sql`SELECT count(*)::int as cnt FROM users;`;
-  if (userCount[0].cnt === 0) {
+  // Seed & Synchronize Users
+  const usersToSeed = [
+    { id: 'usr_admin', username: 'admin', password_hash: 'admin123', email: 'admin@hospital.com', name: 'Dr. Arthur Vance (Director)', role: 'ADMIN', department_id: null, doctor_id: null, patient_id: null },
+    { id: 'usr_auditor', username: 'auditor', password_hash: 'audit123', email: 'eleanor.compliance@hospital.com', name: 'Eleanor Campbell (Chief Compliance Officer)', role: 'COMPLIANCE_AUDITOR', department_id: null, doctor_id: null, patient_id: null },
+    { id: 'usr_sarah', username: 'dr_sarah', password_hash: 'doctor123', email: 'sarah.patel@hospital.com', name: 'Dr. Sarah Patel, MD, FACC', role: 'DOCTOR', department_id: 'dept_card', doctor_id: 'doc_sarah', patient_id: null },
+    { id: 'usr_nurse', username: 'nurse_jane', password_hash: 'nurse123', email: 'jane.miller@hospital.com', name: 'Jane Miller, RN (Charge Nurse)', role: 'NURSE', department_id: 'dept_card', doctor_id: null, patient_id: null },
+    { id: 'usr_reception', username: 'reception', password_hash: 'desk123', email: 'sam.reception@hospital.com', name: 'Samuel Rivera (Reception OPD Desk)', role: 'RECEPTIONIST', department_id: null, doctor_id: null, patient_id: null },
+    { id: 'usr_cmo', username: 'cmo', password_hash: 'cmo123', email: 'cmo@hospital.com', name: 'Dr. Katherine Bell, MD (CMO)', role: 'CHIEF_MEDICAL_OFFICER', department_id: null, doctor_id: null, patient_id: null },
+    { id: 'usr_paulo', username: 'paulo', password_hash: 'patient123', email: 'paulo.hubert@example.com', name: 'Paulo Hubert', role: 'PATIENT', department_id: null, doctor_id: null, patient_id: 'pat_1' }
+  ];
+
+  for (const u of usersToSeed) {
     await sql`
-      INSERT INTO users (id, username, password_hash, email, name, role, department_id, doctor_id, patient_id) VALUES
-      ('usr_auditor', 'auditor', 'pbkdf2:audit2026', 'auditor@hospital.com', 'Devin Vance, CISSP', 'COMPLIANCE_AUDITOR', NULL, NULL, NULL),
-      ('usr_cmo', 'cmo', 'pbkdf2:cmo2026', 'cmo@hospital.com', 'Dr. Katherine Bell, MD', 'CHIEF_MEDICAL_OFFICER', NULL, NULL, NULL),
-      ('usr_sarah', 'doc_sarah', 'pbkdf2:doctor2026', 'sarah.patel@hospital.com', 'Dr. Sarah Patel', 'DOCTOR', 'dept_card', 'doc_sarah', NULL),
-      ('usr_reception', 'reception', 'pbkdf2:reception2026', 'reception@hospital.com', 'Alice Morgan', 'RECEPTIONIST', NULL, NULL, NULL),
-      ('usr_admin', 'admin', 'pbkdf2:admin2026', 'admin@hospital.com', 'System Administrator', 'ADMIN', NULL, NULL, NULL);
+      INSERT INTO users (id, username, password_hash, email, name, role, department_id, doctor_id, patient_id)
+      VALUES (${u.id}, ${u.username}, ${u.password_hash}, ${u.email}, ${u.name}, ${u.role}, ${u.department_id}, ${u.doctor_id}, ${u.patient_id})
+      ON CONFLICT (id) DO UPDATE SET
+        username = EXCLUDED.username,
+        password_hash = EXCLUDED.password_hash,
+        email = EXCLUDED.email,
+        name = EXCLUDED.name,
+        role = EXCLUDED.role,
+        department_id = EXCLUDED.department_id,
+        doctor_id = EXCLUDED.doctor_id,
+        patient_id = EXCLUDED.patient_id;
     `;
-    console.log('  ✓ Seeded 5 ERP users');
   }
+  console.log('  ✓ Seeded & synchronized 7 platform users (Admin, Auditor, Doctor, Nurse, Reception, CMO, Patient)');
 
   // Seed Genesis Block for Audit Records if empty
   const auditCount = await sql`SELECT count(*)::int as cnt FROM audit_records;`;

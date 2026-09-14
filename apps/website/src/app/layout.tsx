@@ -3,8 +3,10 @@ import './globals.css';
 import CookieConsentBanner from '../components/CookieConsentBanner';
 import { Toaster } from 'sonner';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('http://localhost:3001'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'ProHealth Hospital & Academic Medical Center | Compassionate Healthcare',
     template: '%s | ProHealth Hospital'
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'http://localhost:3001',
+    url: SITE_URL,
     siteName: 'ProHealth Hospital & Academic Medical Center',
     title: 'ProHealth Hospital & Academic Medical Center',
     description: 'Premier healthcare institution featuring robotic surgery, Level 1 trauma, and cryptographic patient audit privacy.',
@@ -40,7 +42,7 @@ const jsonLd = {
   '@type': 'Hospital',
   name: 'ProHealth Academic Medical Center',
   description: 'World-class academic medical center providing robotic surgery, cardiology, neurology, and Level 1 trauma care.',
-  url: 'http://localhost:3001',
+  url: SITE_URL,
   telephone: '+1-555-019-2831',
   emergencyTelephone: '876-256-876',
   address: {

@@ -29,6 +29,5 @@
 
 ## Patient Services & Policies
 - **Appointment Booking**: Online scheduling available 24/7 at http://localhost:3001/appointments
-- **Patient Portal (ERP)**: Electronic medical records, lab results, and physician messaging at http://localhost:5173
 - **Notice of Privacy Practices**: Strict compliance with HIPAA § 164.528, complete cryptographic audit log chaining, and zero-trust record isolation.
 - **Refund Policy**: 100% full refund for appointment deposits cancelled with 24 hours advance notice; automated insurance overpayment reconciliation within 14 business days.

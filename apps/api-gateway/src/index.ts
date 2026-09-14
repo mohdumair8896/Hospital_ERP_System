@@ -13,6 +13,7 @@ import {
   AppointmentBookingSchema,
   CreatePatientSchema,
   CreateEncounterSchema,
+  CreateUserSchema,
 } from './security.js';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
@@ -166,6 +167,7 @@ async function bootstrap() {
 
   // 9. Input Validation Pre-Middleware for Ingress Mutations
   app.post('/api/v1/auth/login', validateBody(LoginSchema));
+  app.post('/api/v1/auth/users', validateBody(CreateUserSchema));
   app.post('/api/v1/appointments', validateBody(AppointmentBookingSchema));
   app.post('/api/v1/patients', validateBody(CreatePatientSchema));
   app.post('/api/v1/clinical/encounters', validateBody(CreateEncounterSchema));

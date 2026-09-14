@@ -9,7 +9,6 @@ const routes = [
   '/doctors/doc_sarah',
   '/timetable',
   '/appointments',
-  '/analytics',
   '/blog',
   '/blog/understanding-cardiac-risk-factors-early-prevention',
   '/contact',

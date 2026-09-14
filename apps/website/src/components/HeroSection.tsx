@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Calendar, Ambulance, Clock, CheckCircle2, Play, Users, Stethoscope, ArrowRight, ShieldCheck, X } from 'lucide-react';
+import { BadgeGroup } from "@/components/base/badges/badge-groups";
+import { AvatarLabelGroup } from "@/components/base/avatar/avatar-label-group";
 
 interface HeroSectionProps {
   onOpenBooking: () => void;
@@ -22,9 +24,10 @@ export default function HeroSection({ onOpenBooking }: HeroSectionProps) {
             {/* Hero Left Content */}
             <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
               {/* Badge above headline */}
-              <div className="inline-flex items-center gap-2 bg-white/90 border border-prohealth-border px-4 py-1.5 rounded-full text-xs font-bold text-prohealth-primary shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-prohealth-accent animate-ping" />
-                <span>All Solutions For Your Health</span>
+              <div>
+                <BadgeGroup addonText="Verified" color="success" theme="light" align="trailing" size="md">
+                  All Solutions For Your Health • Level 1 Trauma Care
+                </BadgeGroup>
               </div>
 
               {/* Main Headline */}

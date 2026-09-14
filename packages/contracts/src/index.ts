@@ -335,3 +335,10 @@ export type ClinicalEncounterFinalizedEvent = BaseDomainEvent<{
 }>;
 
 export type AuditLogEmittedEvent = BaseDomainEvent<Omit<AuditRecord, 'id' | 'sequenceNumber' | 'prevRecordHash' | 'recordHash'>>;
+
+// Canonical platform seed data
+import { PRESET_STAFF_USERS as _PRESET, SEED_DEPARTMENTS as _DEPTS, SEED_DOCTORS as _DOCS } from './seed-data.js';
+export const PRESET_STAFF_USERS = _PRESET;
+export const SEED_DEPARTMENTS = _DEPTS;
+export const SEED_DOCTORS = _DOCS;
+export * from './seed-data.js';

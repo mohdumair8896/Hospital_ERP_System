@@ -6,7 +6,9 @@ import {
   BookAppointmentDto, 
   Doctor, 
   Department, 
-  AppointmentStatus 
+  AppointmentStatus,
+  SEED_DEPARTMENTS,
+  SEED_DOCTORS
 } from '@hospital/contracts';
 import * as neonDb from '@hospital/database';
 
@@ -94,64 +96,7 @@ export class AppointmentDatabase {
   private seed(): void {
     const deptCount = (this.db.prepare(`SELECT COUNT(*) as cnt FROM departments`).get() as { cnt: number }).cnt;
     if (deptCount === 0) {
-      const departments: Department[] = [
-        {
-          id: 'dept_emg',
-          code: 'EMERGENCY',
-          name: 'Emergency & Trauma Department',
-          description: '24/7 acute emergency medical and surgical triage care with Level 1 trauma facilities.',
-          location: 'Building A, Ground Floor',
-          emergencySupport: true,
-          icon: 'Flame'
-        },
-        {
-          id: 'dept_card',
-          code: 'CARDIOLOGY',
-          name: 'Cardiology & Heart Center',
-          description: 'Comprehensive cardiovascular diagnostics, cath lab, interventional cardiology, and cardiac surgery.',
-          location: 'Building B, 3rd Floor',
-          emergencySupport: true,
-          icon: 'HeartPulse'
-        },
-        {
-          id: 'dept_ped',
-          code: 'PEDIATRICS',
-          name: 'Pediatrics & Neonatology',
-          description: 'Child-centered healthcare from newborn care and immunizations to adolescent medicine.',
-          location: 'Building C, 2nd Floor',
-          emergencySupport: false,
-          icon: 'Baby'
-        },
-        {
-          id: 'dept_neur',
-          code: 'NEUROLOGY',
-          name: 'Neurology & Neurosurgery',
-          description: 'Advanced brain and nervous system care, stroke unit, epilepsy management, and spinal surgery.',
-          location: 'Building B, 4th Floor',
-          emergencySupport: true,
-          icon: 'Brain'
-        },
-        {
-          id: 'dept_gyn',
-          code: 'GYNECOLOGY',
-          name: 'Gynecology & Obstetrics',
-          description: 'Maternal health, prenatal care, high-risk pregnancy management, and minimally invasive surgery.',
-          location: 'Building C, 3rd Floor',
-          emergencySupport: true,
-          icon: 'HeartHandshake'
-        },
-        {
-          id: 'dept_orth',
-          code: 'ORTHOPEDICS',
-          name: 'Orthopedics & Joint Replacement',
-          description: 'Specialized bone, joint, and sports injury recovery with robotic arthroplasty programs.',
-          location: 'Building A, 2nd Floor',
-          emergencySupport: false,
-          icon: 'Bone'
-        }
-      ];
-
-      for (const d of departments) {
+      for (const d of SEED_DEPARTMENTS) {
         this.db.prepare(`
           INSERT INTO departments (id, code, name, description, location, emergency_support, icon)
           VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -161,82 +106,7 @@ export class AppointmentDatabase {
 
     const docCount = (this.db.prepare(`SELECT COUNT(*) as cnt FROM doctors`).get() as { cnt: number }).cnt;
     if (docCount === 0) {
-      const doctors: Doctor[] = [
-        {
-          id: 'doc_sarah',
-          name: 'Dr. Sarah Patel',
-          title: 'Dr. Sarah Patel, MD, FACC',
-          specialty: 'Cardiologist',
-          departmentId: 'dept_card',
-          qualification: 'MD (Harvard), Fellowship Interventional Cardiology (Johns Hopkins)',
-          experienceYears: 16,
-          rating: 4.96,
-          reviewCount: 248,
-          consultationFee: 150,
-          availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-          availableSlots: ['09:00 AM', '10:30 AM', '11:45 AM', '02:00 PM', '03:30 PM', '04:45 PM'],
-          avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
-          bio: 'Dr. Sarah Patel is a world-renowned interventional cardiologist specializing in coronary artery disease and non-invasive valve repair with over 16 years of clinical excellence.',
-          phone: '+1 (555) 123-4567',
-          email: 'sarah.patel@hospital.com'
-        },
-        {
-          id: 'doc_michael',
-          name: 'Dr. Michael Chang',
-          title: 'Dr. Michael Chang, MD, FAAP',
-          specialty: 'Pediatric Specialist',
-          departmentId: 'dept_ped',
-          qualification: 'MD (Stanford), Board Certified Pediatrician',
-          experienceYears: 12,
-          rating: 4.92,
-          reviewCount: 194,
-          consultationFee: 120,
-          availableDays: ['Monday', 'Wednesday', 'Friday', 'Saturday'],
-          availableSlots: ['09:30 AM', '11:00 AM', '01:30 PM', '03:00 PM', '04:15 PM'],
-          avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400',
-          bio: 'Dr. Chang brings a compassionate, whole-child approach to pediatric medicine, comforting parents while delivering evidence-based pediatric care.',
-          phone: '+1 (555) 234-5678',
-          email: 'michael.chang@hospital.com'
-        },
-        {
-          id: 'doc_elena',
-          name: 'Dr. Elena Rostova',
-          title: 'Dr. Elena Rostova, MD, PhD',
-          specialty: 'Senior Neurologist',
-          departmentId: 'dept_neur',
-          qualification: 'MD, PhD in Neurobiology (Columbia University)',
-          experienceYears: 19,
-          rating: 4.98,
-          reviewCount: 312,
-          consultationFee: 180,
-          availableDays: ['Tuesday', 'Wednesday', 'Thursday'],
-          availableSlots: ['10:00 AM', '11:30 AM', '02:30 PM', '04:00 PM'],
-          avatarUrl: 'https://images.unsplash.com/photo-1594824813576-a364802c63ef?auto=format&fit=crop&q=80&w=400',
-          bio: 'Leader in neuro-degenerative diagnostics, complex migraine therapies, and cerebrovascular rehabilitation.',
-          phone: '+1 (555) 345-6789',
-          email: 'elena.rostova@hospital.com'
-        },
-        {
-          id: 'doc_david',
-          name: 'Dr. David Rodriguez',
-          title: 'Dr. David Rodriguez, MD, FACS',
-          specialty: 'Orthopedic Surgeon',
-          departmentId: 'dept_orth',
-          qualification: 'MD (UCLA), Sports Medicine Fellowship (Cedars-Sinai)',
-          experienceYears: 14,
-          rating: 4.89,
-          reviewCount: 180,
-          consultationFee: 160,
-          availableDays: ['Monday', 'Tuesday', 'Friday'],
-          availableSlots: ['08:30 AM', '10:00 AM', '01:00 PM', '03:30 PM'],
-          avatarUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
-          bio: 'Specialist in minimally invasive joint preservation, ligament reconstruction, and rapid-recovery sports traumatology.',
-          phone: '+1 (555) 456-7890',
-          email: 'david.rodriguez@hospital.com'
-        }
-      ];
-
-      for (const doc of doctors) {
+      for (const doc of SEED_DOCTORS) {
         this.db.prepare(`
           INSERT INTO doctors (
             id, name, title, specialty, department_id, qualification, experience_years,
@@ -303,7 +173,8 @@ export class AppointmentDatabase {
   public async getDepartments(): Promise<Department[]> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getDepartments();
+        const depts = await neonDb.getDepartments();
+        if (depts && depts.length > 0) return depts;
       } catch (err) {
         console.error('[AppointmentDatabase] Neon query error, using local fallback:', err);
       }
@@ -323,7 +194,8 @@ export class AppointmentDatabase {
   public async getDoctors(departmentId?: string): Promise<Doctor[]> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getDoctors(departmentId);
+        const docs = await neonDb.getDoctors(departmentId);
+        if (docs && docs.length > 0) return docs;
       } catch (err) {
         console.error('[AppointmentDatabase] Neon query error, using local fallback:', err);
       }
@@ -360,7 +232,8 @@ export class AppointmentDatabase {
   public async getDoctorById(id: string): Promise<Doctor | null> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getDoctorById(id);
+        const doc = await neonDb.getDoctorById(id);
+        if (doc) return doc;
       } catch (err) {
         console.error('[AppointmentDatabase] Neon query error, using local fallback:', err);
       }
@@ -411,8 +284,8 @@ export class AppointmentDatabase {
         console.error('[AppointmentDatabase] Neon create error, using local fallback:', err);
       }
     }
-    const count = (this.db.prepare(`SELECT COUNT(*) as cnt FROM appointments`).get() as { cnt: number }).cnt;
-    const appointmentNumber = `APT-2026-${(8800 + count + 1).toString()}`;
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const appointmentNumber = `APT-2026-${suffix}`;
     const id = `apt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
 
@@ -437,21 +310,25 @@ export class AppointmentDatabase {
       updatedAt: now
     };
 
-    this.db.prepare(`
-      INSERT INTO appointments (
-        id, appointment_number, patient_id, patient_name, patient_phone, patient_email,
-        doctor_id, doctor_name, department_id, department_name, slot_date, slot_time,
-        type, status, symptoms, consultation_fee, created_at, updated_at
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?
-      )
-    `).run(
-      appt.id, appt.appointmentNumber, appt.patientId, appt.patientName, appt.patientPhone, appt.patientEmail,
-      appt.doctorId, appt.doctorName, appt.departmentId, appt.departmentName, appt.slotDate, appt.slotTime,
-      appt.type, appt.status, appt.symptoms, appt.consultationFee, appt.createdAt, appt.updatedAt
-    );
+    try {
+      this.db.prepare(`
+        INSERT INTO appointments (
+          id, appointment_number, patient_id, patient_name, patient_phone, patient_email,
+          doctor_id, doctor_name, department_id, department_name, slot_date, slot_time,
+          type, status, symptoms, consultation_fee, created_at, updated_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?
+        )
+      `).run(
+        appt.id, appt.appointmentNumber, appt.patientId, appt.patientName, appt.patientPhone, appt.patientEmail,
+        appt.doctorId, appt.doctorName, appt.departmentId, appt.departmentName, appt.slotDate, appt.slotTime,
+        appt.type, appt.status, appt.symptoms, appt.consultationFee, appt.createdAt, appt.updatedAt
+      );
+    } catch (sqliteErr) {
+      console.warn('[AppointmentDatabase] Local sqlite insert warning:', sqliteErr);
+    }
 
     return appt;
   }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, User, Menu, X, Stethoscope, Search, AlignRight } from 'lucide-react';
+import { Calendar, User, Menu, X, Stethoscope, Search, AlignRight, Clock } from 'lucide-react';
 import SearchModal from './SearchModal';
 import SidebarDrawer from './SidebarDrawer';
 
@@ -24,7 +24,6 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
     { label: 'Doctors', href: '/doctors' },
     { label: 'Timetable', href: '/timetable' },
     { label: 'Appointments', href: '/appointments' },
-    { label: 'Analytics', href: '/analytics' },
     { label: 'Contact', href: '/contact' },
   ];
 
@@ -96,16 +95,14 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
                 <AlignRight className="w-5 h-5" />
               </button>
 
-              {/* Staff Portal Link */}
-              <a
-                href="http://localhost:5173"
-                target="_blank"
-                rel="noopener noreferrer"
+              {/* Timetable Link */}
+              <Link
+                href="/timetable"
                 className="flex items-center gap-1.5 text-slate-700 hover:text-prohealth-primary px-3.5 py-2.5 rounded-full text-xs font-bold border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
               >
-                <User className="w-3.5 h-3.5 text-prohealth-primary" />
-                <span>ERP Portal</span>
-              </a>
+                <Clock className="w-3.5 h-3.5 text-prohealth-primary" />
+                <span>Timetable</span>
+              </Link>
 
               {/* Book Appointment Pill */}
               <Link
@@ -181,15 +178,14 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
                 <Calendar className="w-4 h-4" />
                 Book Appointment Now
               </Link>
-              <a
-                href="http://localhost:5173"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/timetable"
+                onClick={() => setMobileMenuOpen(false)}
                 className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 py-2.5 rounded-full font-semibold text-xs text-center flex items-center justify-center gap-2 border border-slate-200"
               >
-                <User className="w-4 h-4 text-prohealth-primary" />
-                Open Staff & Doctor Portal (ERP)
-              </a>
+                <Clock className="w-4 h-4 text-prohealth-primary" />
+                Clinic Timetable &amp; OPD Shifts
+              </Link>
             </div>
           </div>
         )}

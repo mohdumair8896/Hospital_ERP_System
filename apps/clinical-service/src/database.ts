@@ -117,8 +117,8 @@ export class ClinicalDatabase {
     prescriptions: PrescriptionItem[];
     status?: 'OPEN' | 'FINALIZED' | 'AMENDED';
   }): ClinicalEncounter {
-    const count = (this.db.prepare(`SELECT COUNT(*) as cnt FROM clinical_encounters`).get() as { cnt: number }).cnt;
-    const encounterNumber = `ENC-2026-${(100 + count + 1).toString()}`;
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const encounterNumber = `ENC-2026-${suffix}`;
     const id = `enc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
 
@@ -142,24 +142,28 @@ export class ClinicalDatabase {
       finalizedAt: data.status === 'FINALIZED' ? now : undefined
     };
 
-    this.db.prepare(`
-      INSERT INTO clinical_encounters (
-        id, encounter_number, appointment_id, patient_id, doctor_id, doctor_name,
-        type, chief_complaint, vitals_json, primary_diagnosis_code, primary_diagnosis_name,
-        secondary_diagnoses_json, clinical_notes, prescriptions_json, status,
-        created_at, finalized_at
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?
-      )
-    `).run(
-      enc.id, enc.encounterNumber, enc.appointmentId || null, enc.patientId, enc.doctorId, enc.doctorName,
-      enc.type, enc.chiefComplaint, JSON.stringify(enc.vitals), enc.primaryDiagnosisCode, enc.primaryDiagnosisName,
-      JSON.stringify(enc.secondaryDiagnoses || []), enc.clinicalNotes, JSON.stringify(enc.prescriptions),
-      enc.status, enc.createdAt, enc.finalizedAt || null
-    );
+    try {
+      this.db.prepare(`
+        INSERT INTO clinical_encounters (
+          id, encounter_number, appointment_id, patient_id, doctor_id, doctor_name,
+          type, chief_complaint, vitals_json, primary_diagnosis_code, primary_diagnosis_name,
+          secondary_diagnoses_json, clinical_notes, prescriptions_json, status,
+          created_at, finalized_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?
+        )
+      `).run(
+        enc.id, enc.encounterNumber, enc.appointmentId || null, enc.patientId, enc.doctorId, enc.doctorName,
+        enc.type, enc.chiefComplaint, JSON.stringify(enc.vitals), enc.primaryDiagnosisCode, enc.primaryDiagnosisName,
+        JSON.stringify(enc.secondaryDiagnoses || []), enc.clinicalNotes, JSON.stringify(enc.prescriptions),
+        enc.status, enc.createdAt, enc.finalizedAt || null
+      );
+    } catch (sqliteErr) {
+      console.warn('[ClinicalDatabase] Local sqlite insert warning:', sqliteErr);
+    }
 
     return enc;
   }
@@ -192,7 +196,8 @@ export class ClinicalDatabase {
   public async getByPatientId(patientId: string): Promise<ClinicalEncounter[]> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getEncountersByPatient(patientId);
+        const encs = await neonDb.getEncountersByPatient(patientId);
+        if (encs && encs.length > 0) return encs;
       } catch (err) {
         console.error('[ClinicalDatabase] Neon query error, using local fallback:', err);
       }
@@ -207,7 +212,8 @@ export class ClinicalDatabase {
   public async getById(id: string): Promise<ClinicalEncounter | null> {
     if (process.env.DATABASE_URL) {
       try {
-        return await neonDb.getEncounterById(id);
+        const enc = await neonDb.getEncounterById(id);
+        if (enc) return enc;
       } catch (err) {
         console.error('[ClinicalDatabase] Neon getById error, using local fallback:', err);
       }

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PatientDatabase } from './database.js';
 import { createEventBus, EventSubjects } from '@hospital/events';
-import { AuditClient, createAuditMiddleware } from '@hospital/audit-client';
+import { AuditClient } from '@hospital/audit-client';
 import { PatientCreatedEvent, CreatePatientDto } from '@hospital/contracts';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4001;
@@ -17,8 +17,7 @@ async function bootstrap() {
   const eventBus = await createEventBus(NATS_URL);
   const auditClient = new AuditClient('patient-service', eventBus);
 
-  // Attach automated HTTP audit logging middleware
-  app.use(createAuditMiddleware(auditClient));
+  // Domain & PHI-specific audits are logged explicitly per HIPAA § 164.312(b)
 
   app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'UP', service: 'patient-service', time: new Date().toISOString() });

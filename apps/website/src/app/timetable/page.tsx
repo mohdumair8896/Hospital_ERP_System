@@ -169,7 +169,7 @@ export default function TimetablePage() {
                     className="inline-flex items-center gap-2 bg-prohealth-primary hover:bg-prohealth-primary-hover text-white text-xs font-bold px-6 py-2.5 rounded-full shadow-md transition-all self-start md:self-auto"
                   >
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>Book With {docItem.doctorName.split(' ')[1]}</span>
+                    <span>Book with {docItem.doctorName}</span>
                   </button>
                 </div>
 
