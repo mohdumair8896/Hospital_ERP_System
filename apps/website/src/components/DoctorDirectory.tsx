@@ -1,233 +1,133 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Doctor } from '@hospital/contracts';
-import { Star, Calendar, Clock, ArrowRight, Award, Stethoscope, Users } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarBadge } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Award } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar';
+import { Reveal, EASE_OUT_SOFT } from '@/components/motion';
+import { useDoctors, doctorPhoto } from '@/components/sections/discovery/data';
+import { DoctorCard, DoctorCardSkeleton } from '@/components/sections/discovery/DoctorCard';
 
 interface DoctorDirectoryProps {
   onSelectDoctor: (doctorId: string) => void;
 }
 
-import { API_BASE_URL } from '@/lib/api';
+const ALL = 'ALL';
+const RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
+/**
+ * Specialist directory: filter chips whose active pill slides between them
+ * (`layoutId`), and a grid that reflows with `AnimatePresence` + `layout`
+ * (pattern C13 cards). Under reduced motion only the opacity fades.
+ */
 export default function DoctorDirectory({ onSelectDoctor }: DoctorDirectoryProps) {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [filteredSpecialty, setFilteredSpecialty] = useState<string>('ALL');
+  const { items: doctors, loading } = useDoctors();
+  const [filter, setFilter] = useState<string>(ALL);
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/v1/appointments/doctors`)
-      .then(res => res.json())
-      .then(data => setDoctors(data))
-      .catch(() => {
-        // Fallback
-        setDoctors([
-          {
-            id: 'doc_sarah',
-            name: 'Dr. Sarah Patel',
-            title: 'Dr. Sarah Patel, MD, FACC',
-            specialty: 'Cardiologist',
-            departmentId: 'dept_card',
-            qualification: 'MD (Harvard), Fellowship Interventional Cardiology',
-            experienceYears: 16,
-            rating: 4.96,
-            reviewCount: 248,
-            consultationFee: 150,
-            availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-            availableSlots: ['09:00 AM', '10:30 AM', '02:00 PM'],
-            avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
-            bio: 'World-renowned interventional cardiologist specializing in coronary artery disease and non-invasive valve repair.',
-            phone: '+1 (555) 123-4567',
-            email: 'sarah.patel@hospital.com'
-          },
-          {
-            id: 'doc_michael',
-            name: 'Dr. Michael Chang',
-            title: 'Dr. Michael Chang, MD, FAAP',
-            specialty: 'Pediatric Specialist',
-            departmentId: 'dept_ped',
-            qualification: 'MD (Stanford), Board Certified Pediatrician',
-            experienceYears: 12,
-            rating: 4.92,
-            reviewCount: 194,
-            consultationFee: 120,
-            availableDays: ['Monday', 'Wednesday', 'Friday', 'Saturday'],
-            availableSlots: ['09:30 AM', '11:00 AM', '03:00 PM'],
-            avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400',
-            bio: 'Whole-child pediatric specialist dedicated to compassionate care from infancy to adolescence.',
-            phone: '+1 (555) 234-5678',
-            email: 'michael.chang@hospital.com'
-          },
-          {
-            id: 'doc_elena',
-            name: 'Dr. Elena Rostova',
-            title: 'Dr. Elena Rostova, MD, PhD',
-            specialty: 'Senior Neurologist',
-            departmentId: 'dept_neur',
-            qualification: 'MD, PhD in Neurobiology (Columbia University)',
-            experienceYears: 19,
-            rating: 4.98,
-            reviewCount: 312,
-            consultationFee: 180,
-            availableDays: ['Tuesday', 'Wednesday', 'Thursday'],
-            availableSlots: ['10:00 AM', '11:30 AM', '02:30 PM'],
-            avatarUrl: 'https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&q=80&w=400',
-            bio: 'Expert in cerebrovascular stroke rehabilitation and complex neuro-degenerative disorders.',
-            phone: '+1 (555) 345-6789',
-            email: 'elena.rostova@hospital.com'
-          },
-          {
-            id: 'doc_david',
-            name: 'Dr. David Rodriguez',
-            title: 'Dr. David Rodriguez, MD, FACS',
-            specialty: 'Orthopedic Surgeon',
-            departmentId: 'dept_orth',
-            qualification: 'MD (UCLA), Sports Medicine Fellowship (Cedars-Sinai)',
-            experienceYears: 14,
-            rating: 4.89,
-            reviewCount: 180,
-            consultationFee: 160,
-            availableDays: ['Monday', 'Tuesday', 'Friday'],
-            availableSlots: ['08:30 AM', '10:00 AM', '01:00 PM'],
-            avatarUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
-            bio: 'Specialist in minimally invasive joint preservation and rapid-recovery robotic arthroplasty.',
-            phone: '+1 (555) 456-7890',
-            email: 'david.rodriguez@hospital.com'
-          }
-        ]);
-      });
-  }, []);
-
-  const specialties = ['ALL', ...Array.from(new Set(doctors.map(d => d.specialty)))];
-
-  const displayedDoctors = filteredSpecialty === 'ALL'
-    ? doctors
-    : doctors.filter(d => d.specialty === filteredSpecialty);
+  const specialties = [ALL, ...Array.from(new Set(doctors.map((d) => d.specialty)))];
+  const shown = filter === ALL ? doctors : doctors.filter((d) => d.specialty === filter);
+  const extra = doctors.length - 4;
 
   return (
-    <section id="doctors" className="py-24 bg-prohealth-canvas">
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
-        {/* Section Title */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 text-prohealth-primary text-xs font-extrabold uppercase tracking-wider mb-2">
-            <Award className="w-3.5 h-3.5" />
-            <span>QUALIFIED PHYSICIANS</span>
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-prohealth-heading font-display">
-            Meet Our Senior Medical Specialists
-          </h2>
-          <p className="text-sm sm:text-base text-prohealth-body mt-2">
-            Our physicians are board-certified leaders recognized for clinical precision and compassionate patient outcomes.
+    <section id="doctors" aria-labelledby="doctors-title" className="bg-prohealth-canvas py-section">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12 xl:px-20">
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <p className="inline-flex items-center gap-1.5 text-eyebrow uppercase text-primary">
+            <Award className="h-3.5 w-3.5" aria-hidden="true" />
+            Qualified physicians
           </p>
+          <h2 id="doctors-title" className="mt-3 font-display text-display-md text-prohealth-heading">
+            Meet our senior medical specialists
+          </h2>
+          <p className="mt-3 text-base text-prohealth-body">
+            Board-certified leaders recognized for clinical precision and compassionate patient outcomes.
+          </p>
+        </Reveal>
 
-          {/* Specialty Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2 mt-8">
-            {specialties.map(spec => (
-              <button
-                key={spec}
-                onClick={() => setFilteredSpecialty(spec)}
-                className={`text-xs font-bold px-5 py-2.5 rounded-full transition-all ${
-                  filteredSpecialty === spec
-                    ? 'bg-prohealth-primary text-white shadow-md shadow-prohealth-primary/20'
-                    : 'bg-white text-slate-600 hover:bg-prohealth-ice hover:text-prohealth-primary border border-slate-200'
-                }`}
-              >
-                {spec}
-              </button>
-            ))}
-          </div>
+        {/* Specialty filter chips */}
+        <div role="group" aria-label="Filter doctors by specialty" className="mt-8 flex flex-wrap justify-center gap-2">
+          {loading
+            ? Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="h-10 w-28 rounded-pill bg-white motion-safe:animate-pulse" aria-hidden="true" />
+              ))
+            : specialties.map((spec) => {
+                const active = filter === spec;
+                return (
+                  <button
+                    key={spec}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setFilter(spec)}
+                    className={`relative isolate rounded-pill border px-5 py-2.5 text-sm font-semibold transition-colors duration-250 ${
+                      active
+                        ? 'border-primary text-primary-foreground'
+                        : 'border-border bg-white text-prohealth-body hover:bg-secondary hover:text-primary'
+                    } ${RING}`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="doctor-filter-pill"
+                        className="absolute inset-0 -z-10 rounded-pill bg-primary"
+                        transition={{ duration: 0.35, ease: EASE_OUT_SOFT }}
+                        aria-hidden="true"
+                      />
+                    )}
+                    {spec === ALL ? 'All specialists' : spec}
+                  </button>
+                );
+              })}
         </div>
 
-        {/* Clinical Team AvatarGroup Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-white/80 backdrop-blur-sm border rounded-2xl p-4 shadow-xs max-w-xl mx-auto mb-10">
-          <AvatarGroup>
-            {doctors.slice(0, 4).map((d) => (
-              <Avatar key={d.id}>
-                <AvatarImage src={d.avatarUrl} alt={d.name} />
-                <AvatarFallback>{d.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-              </Avatar>
-            ))}
-            <AvatarGroupCount>+{Math.max(0, doctors.length - 4 || 12)}</AvatarGroupCount>
-          </AvatarGroup>
-          <div className="text-center sm:text-left">
-            <span className="text-xs font-bold text-foreground block">
-              {doctors.length || 24}+ Clinical Attending Specialists On Call Today
-            </span>
-            <span className="text-[11px] text-muted-foreground">
-              Verified Board Certification • 99.4% Patient Satisfaction
-            </span>
+        {/* Team strip */}
+        {!loading && doctors.length > 0 && (
+          <div className="mx-auto mb-10 mt-8 flex max-w-xl flex-col items-center justify-center gap-4 rounded-card border border-border bg-white/80 p-4 shadow-soft sm:flex-row">
+            <AvatarGroup>
+              {doctors.slice(0, 4).map((d) => (
+                <Avatar key={d.id}>
+                  <AvatarImage src={doctorPhoto(d)} alt="" />
+                  <AvatarFallback>{d.name.replace(/^Dr\.?\s+/, '').split(' ').map((n) => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+              ))}
+              {extra > 0 && <AvatarGroupCount>+{extra}</AvatarGroupCount>}
+            </AvatarGroup>
+            <p className="text-center text-sm sm:text-left">
+              <span className="block font-semibold text-prohealth-heading">
+                {doctors.length} attending specialists in {specialties.length - 1} specialties
+              </span>
+              <span className="text-prohealth-muted">Verified board certification</span>
+            </p>
           </div>
-        </div>
+        )}
 
-        {/* Doctors Grid - Balanced 3-column layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedDoctors.map(doc => (
-            <div
-              key={doc.id}
-              className="prohealth-card bg-white overflow-hidden transition-all duration-300 flex flex-col justify-between group"
-            >
-              <div>
-                {/* Photo & Rating Badge */}
-                <div className="relative h-64 overflow-hidden bg-slate-100">
-                  <img
-                    src={doc.avatarUrl}
-                    alt={doc.name}
-                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 text-xs font-bold text-amber-500">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{doc.rating}</span>
-                    <span className="text-[10px] text-slate-400 font-normal">({doc.reviewCount})</span>
-                  </div>
-                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm text-prohealth-primary text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
-                    {doc.specialty}
-                  </div>
-                </div>
+        <p className="sr-only" aria-live="polite">
+          {loading ? 'Loading doctors' : `Showing ${shown.length} ${shown.length === 1 ? 'doctor' : 'doctors'}`}
+        </p>
 
-                {/* Body Content */}
-                <div className="p-5 space-y-3">
-                  <div>
-                    <h3 className="text-base font-bold text-prohealth-heading group-hover:text-prohealth-primary transition-colors">
-                      <Link href={`/doctors/${doc.id}`}>
-                        {doc.name}
-                      </Link>
-                    </h3>
-                    <p className="text-[11px] text-prohealth-muted font-medium line-clamp-1">{doc.qualification}</p>
-                  </div>
-
-                  <p className="text-xs text-prohealth-body line-clamp-2 leading-relaxed">
-                    {doc.bio}
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Clock className="w-3 h-3 text-prohealth-secondary" />
-                      <span>{doc.experienceYears} Years Clinical Practice</span>
-                    </div>
-                    <div className="text-[11px] font-semibold text-slate-700">
-                      Consultation: <span className="text-prohealth-primary font-bold">${doc.consultationFee}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="p-5 pt-0">
-                <button
-                  onClick={() => onSelectDoctor(doc.id)}
-                  className="w-full flex items-center justify-center gap-2 bg-prohealth-primary hover:bg-prohealth-primary-hover text-white font-bold py-2.5 px-4 rounded-full text-xs shadow-md shadow-prohealth-primary/20 hover:shadow-lg transition-all active:scale-95"
+        {loading ? (
+          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading doctors">
+            {Array.from({ length: 3 }, (_, i) => (
+              <DoctorCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <motion.ul layout className="relative grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {shown.map((doc) => (
+                <motion.li
+                  key={doc.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.4, ease: EASE_OUT_SOFT }}
                 >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Book Appointment</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <DoctorCard doc={doc} onBook={onSelectDoctor} />
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </motion.ul>
+        )}
       </div>
     </section>
   );
 }
-

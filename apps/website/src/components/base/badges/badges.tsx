@@ -114,7 +114,7 @@ export const BadgeWithDot: React.FC<BadgeWithDotProps> = ({
     >
       <span
         className={cn(
-          "size-1.5 rounded-full shrink-0 animate-pulse",
+          "size-1.5 rounded-full shrink-0 motion-safe:animate-pulse",
           current.dot,
           dotClassName
         )}

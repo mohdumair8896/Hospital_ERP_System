@@ -6,267 +6,213 @@ import {
   Phone,
   Mail,
   MapPin,
-  Ambulance,
   Stethoscope,
-  ShieldCheck,
-  Award,
-  ArrowRight,
   ArrowUp,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-  Youtube,
   Send,
-  CheckCircle2,
+  Info,
 } from 'lucide-react';
+
+/** White ring for the dark footer background. */
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-prohealth-primary';
+
+const QUICK_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About Us' },
+  { href: '/departments', label: 'Departments' },
+  { href: '/doctors', label: 'Doctors Directory' },
+  { href: '/timetable', label: 'Clinic Timetable' },
+  { href: '/appointments', label: 'Book Appointment' },
+  { href: '/contact', label: 'Contact Us' },
+];
+
+/** Ids match DEPARTMENTS in data/hospitalData.ts (the static /departments/[id] pages). */
+const DEPARTMENT_LINKS = [
+  { href: '/departments/dept_card', label: 'Cardiology & Heart Center' },
+  { href: '/departments/dept_emrg', label: 'Emergency & Level 1 Trauma' },
+  { href: '/departments/dept_peds', label: 'Pediatrics & Neonatology' },
+  { href: '/departments/dept_neuro', label: 'Neurology & Neurosurgery' },
+  { href: '/departments/dept_obgyn', label: 'Gynecology & Obstetrics' },
+  { href: '/departments/dept_ortho', label: 'Orthopedics & Joint Replacement' },
+];
+
+const LEGAL_LINKS = [
+  { href: '/privacy-policy', label: 'Privacy Policy (HIPAA)' },
+  { href: '/terms', label: 'Terms of Care' },
+  { href: '/cookie-policy', label: 'Cookie Policy' },
+  { href: '/refund-policy', label: 'Billing & Refund Policy' },
+];
+
+
+const linkClass = `rounded hover:text-white transition-colors ${FOCUS_RING}`;
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  // There is no newsletter service yet, so we say so instead of faking a subscription.
+  const [notice, setNotice] = useState(false);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newsletterEmail) {
-      setSubscribed(true);
-      setNewsletterEmail('');
-    }
+    if (newsletterEmail) setNotice(true);
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   };
 
   return (
-    <footer className="bg-[#1F5084] text-slate-200 text-xs pt-16 pb-8 border-t border-[#265d96]">
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
+    <footer className="relative overflow-hidden bg-prohealth-primary text-slate-200 text-sm pt-16 pb-8 border-t border-[#265d96]">
+      {/* Ghost wordmark (C36): decorative, 4% white, cropped by the bottom edge */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none select-none absolute inset-x-0 -bottom-[3vw] flex justify-center font-display font-extrabold leading-none tracking-tight text-[18vw] text-white/[0.04] whitespace-nowrap"
+      >
+        ProHealth
+      </div>
+
+      <div className="relative max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-16 border-b border-white/10">
-          {/* Col 1: Brand & Contact Info (4 cols) */}
+          {/* Brand & contact */}
           <div className="lg:col-span-4 space-y-5">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-white text-prohealth-primary flex items-center justify-center font-bold shadow-md">
-                <Stethoscope className="w-6 h-6" />
-              </div>
+            <Link href="/" className={`inline-flex items-center gap-2.5 rounded-xl ${FOCUS_RING}`}>
+              <span className="w-10 h-10 rounded-xl bg-white text-prohealth-primary flex items-center justify-center shadow-md">
+                <Stethoscope className="w-6 h-6" aria-hidden="true" />
+              </span>
               <span className="text-xl font-extrabold text-white font-display">
                 Pro<span className="text-sky-300">Health</span>
-                <span className="text-[10px] text-white font-bold ml-1.5 uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/15 border border-white/20">
+                <span className="text-xs text-white font-bold ml-1.5 uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/15 border border-white/20">
                   Hospital
                 </span>
               </span>
             </Link>
 
-            <p className="text-xs text-slate-200 leading-relaxed pr-6">
+            <p className="text-sm text-slate-200 leading-relaxed lg:pr-6">
               ProHealth Academic Medical Center is dedicated to providing high-quality, compassionate clinical healthcare services, advanced robotic surgical interventions, and integrated medical education.
             </p>
 
-            <div className="space-y-2.5 text-xs text-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
-                  <Phone className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <span className="text-[11px] text-slate-300 block">Telephone Inquiries:</span>
-                  <a href="tel:1234567890" className="font-bold hover:text-white transition-colors">
-                    123-456-7890
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
-                  <Mail className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <span className="text-[11px] text-slate-300 block">Official Support Email:</span>
-                  <a href="mailto:infotech@prohealth.com" className="font-bold hover:text-white transition-colors">
-                    infotech@prohealth.com
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <span className="text-[11px] text-slate-300 block">Hospital Campus Address:</span>
+            <ul className="space-y-3 text-sm text-slate-100">
+              <li className="flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
+                  <Phone className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="text-xs text-slate-300 block">Telephone Inquiries</span>
+                  <a href="tel:1234567890" className={`font-bold ${linkClass}`}>123-456-7890</a>
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
+                  <Mail className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="text-xs text-slate-300 block">Official Support Email</span>
+                  <a href="mailto:infotech@prohealth.com" className={`font-bold ${linkClass}`}>infotech@prohealth.com</a>
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0 mt-0.5">
+                  <MapPin className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="text-xs text-slate-300 block">Hospital Campus Address</span>
                   <span className="font-medium">123 Healthcare Blvd, Suite 400, New York, NY 10016</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Col 2: Quick Links (2.5 cols) */}
-          <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Quick Links</h4>
-            <ul className="space-y-2.5 text-xs text-slate-200">
-              <li>
-                <Link href="/" className="hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-white transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments" className="hover:text-white transition-colors">
-                  Departments
-                </Link>
-              </li>
-              <li>
-                <Link href="/doctors" className="hover:text-white transition-colors">
-                  Doctors Directory
-                </Link>
-              </li>
-              <li>
-                <Link href="/timetable" className="hover:text-white transition-colors">
-                  Clinic Timetable
-                </Link>
-              </li>
-              <li>
-                <Link href="/appointments" className="hover:text-white transition-colors">
-                  Book Appointment
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
-                  Contact Us
-                </Link>
+                </span>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Clinical Departments (2.5 cols) */}
-          <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Departments</h4>
-            <ul className="space-y-2.5 text-xs text-slate-200">
-              <li>
-                <Link href="/departments/dept_card" className="hover:text-white transition-colors">
-                  Cardiology & Heart Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments/dept_emg" className="hover:text-white transition-colors">
-                  Emergency & Level 1 Trauma
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments/dept_ped" className="hover:text-white transition-colors">
-                  Pediatrics & Neonatology
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments/dept_neur" className="hover:text-white transition-colors">
-                  Neurology & Neurosurgery
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments/dept_gyn" className="hover:text-white transition-colors">
-                  Gynecology & Obstetrics
-                </Link>
-              </li>
-              <li>
-                <Link href="/departments/dept_orth" className="hover:text-white transition-colors">
-                  Orthopedics & Joint Replacement
-                </Link>
-              </li>
+          <nav aria-labelledby="footer-quick-links" className="lg:col-span-2 space-y-4">
+            <h2 id="footer-quick-links" className="text-sm font-bold text-white uppercase tracking-wider">Quick Links</h2>
+            <ul className="space-y-2.5 text-sm text-slate-200">
+              {QUICK_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className={linkClass}>{l.label}</Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Col 4: Newsletter & Socials (3 cols) */}
+          <nav aria-labelledby="footer-departments" className="lg:col-span-3 space-y-4">
+            <h2 id="footer-departments" className="text-sm font-bold text-white uppercase tracking-wider">Departments</h2>
+            <ul className="space-y-2.5 text-sm text-slate-200">
+              {DEPARTMENT_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className={linkClass}>{l.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Newsletter & socials */}
           <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Be Our Subscribers</h4>
-            <p className="text-xs text-slate-200 leading-relaxed">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Be Our Subscribers</h2>
+            <p className="text-sm text-slate-200 leading-relaxed">
               To get the latest updates on medical discoveries, health tips, and clinic timetables, subscribe below.
             </p>
 
-            {subscribed ? (
-              <div className="p-3 bg-white/10 rounded-xl border border-white/20 text-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span className="text-xs font-semibold">Thank you for subscribing to ProHealth!</span>
+            {/* Glass newsletter pill (C37) */}
+            <form onSubmit={handleSubscribe}>
+              <label htmlFor="footer-newsletter" className="sr-only">Email address</label>
+              <div className="flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 p-1.5 pl-4 transition-colors focus-within:bg-white/15 focus-within:border-white/40">
+                <input
+                  id="footer-newsletter"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={newsletterEmail}
+                  onChange={(e) => {
+                    setNewsletterEmail(e.target.value);
+                    setNotice(false);
+                  }}
+                  placeholder="Enter your email address"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-300 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white text-prohealth-primary hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-colors ${FOCUS_RING}`}
+                >
+                  <Send className="w-3.5 h-3.5" aria-hidden="true" />
+                  Subscribe
+                </button>
               </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    className="w-full px-4 py-3 rounded-full bg-white/10 border border-white/20 text-xs text-white placeholder:text-slate-300 focus:outline-none focus:bg-white/15 pr-12"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-1.5 top-1.5 bottom-1.5 px-3 rounded-full bg-white text-prohealth-primary hover:bg-slate-100 flex items-center justify-center transition-colors"
-                    aria-label="Submit Newsletter"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Social Media Channels */}
-            <div className="pt-3">
-              <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">Connect With Us</p>
-              <div className="flex items-center gap-2 text-white">
-                <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white hover:text-prohealth-primary flex items-center justify-center transition-all">
-                  <Facebook className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white hover:text-prohealth-primary flex items-center justify-center transition-all">
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white hover:text-prohealth-primary flex items-center justify-center transition-all">
-                  <Linkedin className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white hover:text-prohealth-primary flex items-center justify-center transition-all">
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white hover:text-prohealth-primary flex items-center justify-center transition-all">
-                  <Youtube className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
+            </form>
+            <p id="footer-newsletter-status" role="status">
+              {notice && (
+                <span className="flex items-start gap-2 rounded-xl bg-white/10 border border-white/20 p-3 text-sm text-slate-100">
+                  <Info className="w-4 h-4 shrink-0 mt-0.5 text-sky-300" aria-hidden="true" />
+                  <span>
+                    Thanks for your interest. Email sign-up isn’t available online yet, so we haven’t saved your address. Meanwhile, see our{' '}
+                    <Link href="/blog" className={`font-semibold underline underline-offset-2 ${linkClass}`}>Health Insights</Link>.
+                  </span>
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
-        {/* Bottom Legal Bar & Back-to-Top */}
-        <div className="pt-8 flex flex-col sm:flex-row justify-between items-center text-[11px] text-slate-300 gap-4">
+        {/* Legal bar & back to top */}
+        <div className="pt-8 flex flex-col lg:flex-row justify-between items-center text-xs text-slate-300 gap-4 text-center lg:text-left">
           <p>
             © 2026 ProHealth Academic Medical Center. All rights reserved. JCI Gold Seal Certified (ID: JCI-AMC-2026-9941).
           </p>
 
-          <nav className="flex flex-wrap items-center gap-4 text-slate-200">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
-              Privacy Policy (HIPAA)
-            </Link>
-            <span>•</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms of Care
-            </Link>
-            <span>•</span>
-            <Link href="/cookie-policy" className="hover:text-white transition-colors">
-              Cookie Policy
-            </Link>
-            <span>•</span>
-            <Link href="/refund-policy" className="hover:text-white transition-colors">
-              Billing & Refund Policy
-            </Link>
+          <nav aria-label="Legal" className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-slate-200">
+            {LEGAL_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className={linkClass}>{l.label}</Link>
+            ))}
           </nav>
 
           <button
+            type="button"
             onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-xs text-sky-200 hover:text-white bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full transition-all"
+            className={`flex items-center gap-1.5 text-sm text-sky-100 hover:text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors ${FOCUS_RING}`}
           >
             <span>Back to Top</span>
-            <ArrowUp className="w-3.5 h-3.5" />
+            <ArrowUp className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
     </footer>
   );
 }
-

@@ -636,13 +636,34 @@ export async function getAuditRecords(filters?: AuditSearchQuery): Promise<{ tot
   const sql = getNeonSql();
   const limit = filters?.limit || 50;
   const offset = filters?.offset || 0;
+  // Unset filters are passed as NULL so a single static query (matching the SQLite fallback) applies them all.
+  const actorId = filters?.actorId || null;
+  const action = filters?.action || null;
+  const resourceType = filters?.resourceType || null;
+  const resourceId = filters?.resourceId || null;
+  const startDate = filters?.startDate || null;
+  const endDate = filters?.endDate || null;
 
-  const countRes = await sql`SELECT count(*)::int as cnt FROM audit_records;`;
+  const countRes = await sql`
+    SELECT count(*)::int as cnt FROM audit_records
+    WHERE (${actorId}::text IS NULL OR actor_id = ${actorId}::text)
+      AND (${action}::text IS NULL OR action = ${action}::text)
+      AND (${resourceType}::text IS NULL OR resource_type = ${resourceType}::text)
+      AND (${resourceId}::text IS NULL OR resource_id = ${resourceId}::text)
+      AND (${startDate}::timestamptz IS NULL OR timestamp >= ${startDate}::timestamptz)
+      AND (${endDate}::timestamptz IS NULL OR timestamp <= ${endDate}::timestamptz);
+  `;
   const total = countRes[0]?.cnt || 0;
 
   const rows = await sql`
-    SELECT * FROM audit_records 
-    ORDER BY sequence_number DESC 
+    SELECT * FROM audit_records
+    WHERE (${actorId}::text IS NULL OR actor_id = ${actorId}::text)
+      AND (${action}::text IS NULL OR action = ${action}::text)
+      AND (${resourceType}::text IS NULL OR resource_type = ${resourceType}::text)
+      AND (${resourceId}::text IS NULL OR resource_id = ${resourceId}::text)
+      AND (${startDate}::timestamptz IS NULL OR timestamp >= ${startDate}::timestamptz)
+      AND (${endDate}::timestamptz IS NULL OR timestamp <= ${endDate}::timestamptz)
+    ORDER BY sequence_number DESC
     LIMIT ${limit} OFFSET ${offset};
   `;
 

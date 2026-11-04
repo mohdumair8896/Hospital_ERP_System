@@ -1,31 +1,55 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, User, Menu, X, Stethoscope, Search, AlignRight, Clock } from 'lucide-react';
+import { useMotionValueEvent, useScroll } from 'framer-motion';
+import { Calendar, Stethoscope, Search, AlignRight, Phone } from 'lucide-react';
 import SearchModal from './SearchModal';
 import SidebarDrawer from './SidebarDrawer';
+import MobileMenu, { type NavLink } from './sections/discovery/MobileMenu';
 
 interface NavbarProps {
   onOpenBooking?: () => void;
 }
 
+const RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+const ICON_BUTTON = `rounded-full p-2.5 text-prohealth-body transition-colors duration-250 hover:bg-secondary hover:text-primary ${RING}`;
+
+const NAV_LINKS: NavLink[] = [
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/about' },
+  { label: 'Departments', href: '/departments' },
+  { label: 'Doctors', href: '/doctors' },
+  { label: 'Timetable', href: '/timetable' },
+  { label: 'Appointments', href: '/appointments' },
+  { label: 'Contact', href: '/contact' },
+];
+
+/** Compact after 80px of scroll; back to full height under 60px (no flicker at the edge). */
+function useCompactHeader() {
+  const { scrollY } = useScroll();
+  const [compact, setCompact] = useState(false);
+  useEffect(() => setCompact(window.scrollY > 80), []);
+  useMotionValueEvent(scrollY, 'change', (y) => {
+    setCompact((was) => (was ? y > 60 : y > 80));
+  });
+  return compact;
+}
+
+/**
+ * Site header. After 80px of scroll it condenses into a floating pill: the
+ * full-width bar fades out and a rounded bar fades and scales in behind the
+ * same content (opacity and transform only, no height change). The emergency
+ * number is visible at every width and scroll position. Below 1280px the links
+ * move into a full-screen menu on Radix Dialog.
+ */
 export default function Navbar({ onOpenBooking }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
   const pathname = usePathname();
-
-  const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'About', href: '/about' },
-    { label: 'Departments', href: '/departments' },
-    { label: 'Doctors', href: '/doctors' },
-    { label: 'Timetable', href: '/timetable' },
-    { label: 'Appointments', href: '/appointments' },
-    { label: 'Contact', href: '/contact' },
-  ];
+  const compact = useCompactHeader();
 
   const handleBookingClick = (e: React.MouseEvent) => {
     if (onOpenBooking) {
@@ -36,38 +60,66 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
-          <div className="flex justify-between items-center h-20">
-            {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-prohealth-primary text-white flex items-center justify-center font-bold shadow-md shadow-prohealth-primary/20 group-hover:scale-105 transition-transform">
-                <Stethoscope className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-1 font-display">
-                  Pro<span className="text-prohealth-secondary">Health</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-prohealth-ice text-prohealth-primary ml-1 border border-prohealth-primary/20">
+      <header className="sticky top-0 z-40">
+        {/* Full-width bar (top of page) */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 border-b border-border bg-white/95 shadow-soft backdrop-blur-md transition-opacity duration-400 ease-out-soft ${
+            compact ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+        <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-12">
+          <div className="relative flex h-16 items-center justify-between gap-2 sm:gap-3 lg:h-20">
+            {/* Floating pill (after scrolling) */}
+            <div
+              aria-hidden="true"
+              className={`absolute -inset-x-2 inset-y-1.5 rounded-pill border border-border bg-white/90 shadow-lift backdrop-blur-md transition-[opacity,transform] duration-400 ease-out-soft sm:-inset-x-4 lg:inset-y-3 ${
+                compact ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-0'
+              }`}
+            />
+
+            {/* Brand */}
+            <Link href="/" className={`group relative flex shrink-0 items-center gap-2.5 rounded-xl ${RING}`}>
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft transition-transform duration-400 ease-out-soft sm:h-10 sm:w-10 ${
+                  compact ? 'scale-90' : 'scale-100'
+                }`}
+              >
+                <Stethoscope className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="leading-tight">
+                <span className="flex items-center gap-1.5 font-display text-lg font-extrabold tracking-tight text-prohealth-heading sm:text-xl">
+                  <span>
+                    Pro<span className="text-prohealth-secondary">Health</span>
+                  </span>
+                  <span className="ml-1 hidden rounded-pill border border-primary/20 bg-secondary px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary 2xl:inline">
                     Hospital
                   </span>
-                </div>
-                <p className="text-[11px] text-slate-500 font-medium">Academic Medical Center</p>
-              </div>
+                </span>
+                <span
+                  className={`hidden text-xs font-medium text-prohealth-muted transition-opacity duration-250 sm:block ${
+                    compact ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  Academic Medical Center
+                </span>
+              </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-700">
-              {navLinks.map((link) => {
+            {/* Desktop links */}
+            <nav aria-label="Main" className="relative hidden items-center gap-5 text-sm font-semibold text-prohealth-body xl:flex">
+              {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`transition-colors py-1 ${
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`relative rounded-md py-1 transition-colors duration-250 ${
                       isActive
-                        ? 'text-prohealth-primary font-bold border-b-2 border-prohealth-primary'
-                        : 'hover:text-prohealth-secondary'
-                    }`}
+                        ? 'text-primary after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary'
+                        : 'hover:text-primary'
+                    } ${RING}`}
                   >
                     {link.label}
                   </Link>
@@ -75,124 +127,59 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
               })}
             </nav>
 
-            {/* Action CTAs */}
-            <div className="hidden sm:flex items-center gap-3">
-              {/* Search Trigger */}
-              <button
-                onClick={() => setSearchModalOpen(true)}
-                className="p-2.5 rounded-full text-slate-600 hover:text-prohealth-primary hover:bg-prohealth-ice/60 transition-colors"
-                aria-label="Search site"
+            {/* Actions */}
+            <div className="relative flex items-center gap-1 sm:gap-2">
+              <a
+                href="tel:876256876"
+                className={`inline-flex items-center gap-1 whitespace-nowrap rounded-pill bg-alert px-2.5 py-2 text-[13px] font-semibold text-white transition-colors duration-250 hover:bg-alert-strong min-[360px]:gap-1.5 min-[360px]:px-3 min-[360px]:text-sm ${RING}`}
               >
-                <Search className="w-4 h-4" />
+                <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {/* The label is visible when there is room; the number always is. */}
+                <span className="sr-only md:not-sr-only xl:sr-only 2xl:not-sr-only">Ambulance</span>
+                <span>876-256-876</span>
+              </a>
+
+              <button type="button" onClick={() => setSearchModalOpen(true)} className={`hidden sm:block ${ICON_BUTTON}`} aria-label="Search site">
+                <Search className="h-4 w-4" aria-hidden="true" />
               </button>
 
-              {/* Sidebar Drawer Toggle */}
               <button
+                type="button"
                 onClick={() => setSidebarDrawerOpen(true)}
-                className="p-2.5 rounded-full text-slate-600 hover:text-prohealth-primary hover:bg-prohealth-ice/60 transition-colors"
+                className={`hidden md:block ${ICON_BUTTON}`}
                 aria-label="Open information sidebar"
               >
-                <AlignRight className="w-5 h-5" />
+                <AlignRight className="h-5 w-5" aria-hidden="true" />
               </button>
 
-              {/* Timetable Link */}
-              <Link
-                href="/timetable"
-                className="flex items-center gap-1.5 text-slate-700 hover:text-prohealth-primary px-3.5 py-2.5 rounded-full text-xs font-bold border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
-              >
-                <Clock className="w-3.5 h-3.5 text-prohealth-primary" />
-                <span>Timetable</span>
-              </Link>
-
-              {/* Book Appointment Pill */}
               <Link
                 href="/appointments"
                 onClick={handleBookingClick}
-                className="flex items-center gap-2 bg-prohealth-primary hover:bg-prohealth-primary-hover text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-md shadow-prohealth-primary/20 hover:shadow-lg transition-all active:scale-[0.98]"
+                className={`hidden items-center gap-2 rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-colors duration-250 hover:bg-prohealth-primary-hover sm:flex ${RING}`}
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="h-4 w-4" aria-hidden="true" />
                 <span>Appointment</span>
               </Link>
-            </div>
 
-            {/* Mobile Actions */}
-            <div className="lg:hidden flex items-center gap-1.5">
-              <button
-                onClick={() => setSearchModalOpen(true)}
-                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-              <Link
-                href="/appointments"
-                onClick={handleBookingClick}
-                className="bg-prohealth-primary text-white p-2 rounded-lg text-xs font-semibold flex items-center gap-1"
-                aria-label="Book Appointment"
-              >
-                <Calendar className="w-4 h-4" />
-              </Link>
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                aria-label="Toggle Navigation Menu"
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
+              <MobileMenu
+                open={mobileMenuOpen}
+                onOpenChange={setMobileMenuOpen}
+                links={NAV_LINKS}
+                pathname={pathname}
+                onOpenSearch={() => setSearchModalOpen(true)}
+                onOpenBooking={onOpenBooking}
+              />
             </div>
           </div>
         </div>
-
-        {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-b border-slate-200 px-5 pt-3 pb-6 space-y-2 shadow-xl animate-in slide-in-from-top-3 duration-200">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block text-sm py-2.5 px-3 rounded-lg font-medium transition-colors ${
-                    isActive
-                      ? 'bg-prohealth-ice text-prohealth-primary font-bold'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-prohealth-primary'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5">
-              <Link
-                href="/appointments"
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  if (onOpenBooking) {
-                    e.preventDefault();
-                    onOpenBooking();
-                  }
-                }}
-                className="w-full bg-prohealth-primary hover:bg-prohealth-primary-hover text-white py-3 rounded-full font-bold text-xs text-center flex items-center justify-center gap-2 shadow-md"
-              >
-                <Calendar className="w-4 h-4" />
-                Book Appointment Now
-              </Link>
-              <Link
-                href="/timetable"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 py-2.5 rounded-full font-semibold text-xs text-center flex items-center justify-center gap-2 border border-slate-200"
-              >
-                <Clock className="w-4 h-4 text-prohealth-primary" />
-                Clinic Timetable &amp; OPD Shifts
-              </Link>
-            </div>
-          </div>
-        )}
       </header>
 
       {/* Instant Search Modal */}
-      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onOpen={() => setSearchModalOpen(true)}
+      />
 
       {/* Slide-out Sidebar Drawer */}
       <SidebarDrawer
@@ -203,4 +190,3 @@ export default function Navbar({ onOpenBooking }: NavbarProps) {
     </>
   );
 }
-

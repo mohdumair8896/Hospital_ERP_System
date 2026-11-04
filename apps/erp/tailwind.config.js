@@ -1,11 +1,18 @@
+import prohealthPreset from '../../tailwind.preset.cjs';
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  presets: [prohealthPreset],
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
       colors: {
         prohealth: {
           primary: '#1F5084',       // Deep trust blue
@@ -30,7 +37,7 @@ export default {
           cyan: '#0284c7',
           sky: '#38bdf8',
           accent: '#3B82F6',
-          emergency: '#ef4444',
+          emergency: '#DC2626',     // red-600, AA on white (4.83:1)
           light: '#F0F6FB',
           border: '#E4E7EC',
         },

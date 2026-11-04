@@ -144,13 +144,16 @@ export const CreateEncounterSchema = z.object({
   appointmentId: z.string().optional(),
   type: z.enum(['OPD', 'IPD', 'EMERGENCY']),
   chiefComplaint: z.string().min(2, 'Chief complaint must be at least 2 characters'),
+  // Field names must match VitalSigns / PrescriptionItem in @hospital/contracts,
+  // which is what clinical-service stores; zod strips any key not listed here.
   vitals: z.object({
     bloodPressureSystolic: z.number().int().min(50).max(260),
     bloodPressureDiastolic: z.number().int().min(30).max(180),
     heartRateBpm: z.number().int().min(30).max(240),
-    temperatureCelsius: z.number().min(30).max(45),
+    bodyTemperatureCelsius: z.number().min(30).max(45),
     respiratoryRate: z.number().int().min(5).max(60),
-    oxygenSaturationPercent: z.number().int().min(50).max(100),
+    oxygenSaturationSpO2: z.number().int().min(50).max(100),
+    bloodGlucoseMgDl: z.number().min(10).max(1000).optional(),
     recordedAt: z.string().optional(),
   }),
   primaryDiagnosisCode: z.string().min(2, 'ICD-10 code is required'),
@@ -158,10 +161,10 @@ export const CreateEncounterSchema = z.object({
   secondaryDiagnoses: z.array(z.string()).optional(),
   clinicalNotes: z.string().min(2, 'Clinical notes are required'),
   prescriptions: z.array(z.object({
-    medicationName: z.string(),
+    medicineName: z.string().trim().min(1, 'Medicine name is required'),
     dosage: z.string(),
     frequency: z.string(),
-    durationDays: z.number().int().positive(),
+    duration: z.string().trim().min(1, 'Duration is required'),
     instructions: z.string(),
   })).optional(),
 });

@@ -30,6 +30,12 @@ async function bootstrap() {
     res.json({ total: patients.length, patients });
   });
 
+  // Registry size only (no PHI), for dashboards. Must stay above /:id.
+  app.get('/api/v1/patients/count', async (req: Request, res: Response) => {
+    const patients = await patientDb.search();
+    res.json({ total: patients.length });
+  });
+
   // Get patient by ID or MRN
   app.get('/api/v1/patients/:id', async (req: Request, res: Response) => {
     const patient = await patientDb.getById(req.params.id);

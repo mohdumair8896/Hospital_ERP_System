@@ -60,6 +60,26 @@ async function bootstrap() {
     res.json({ total: appointments.length, appointments });
   });
 
+  // De-identified summary for dashboards: no patient identity, contact details or symptoms
+  app.get('/api/v1/appointments/summary', async (req: Request, res: Response) => {
+    const appointments = await apptDb.getAppointments({});
+    res.json({
+      total: appointments.length,
+      appointments: appointments.map((a) => ({
+        id: a.id,
+        slotDate: a.slotDate,
+        slotTime: a.slotTime,
+        type: a.type,
+        status: a.status,
+        departmentId: a.departmentId,
+        departmentName: a.departmentName,
+        doctorId: a.doctorId,
+        doctorName: a.doctorName,
+        createdAt: a.createdAt,
+      })),
+    });
+  });
+
   // Book appointment
   app.post('/api/v1/appointments', async (req: Request, res: Response) => {
     const body = req.body || {};

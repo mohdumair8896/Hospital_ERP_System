@@ -1,275 +1,187 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Calendar, Ambulance, Clock, CheckCircle2, Play, Users, Stethoscope, ArrowRight, ShieldCheck, X } from 'lucide-react';
-import { BadgeGroup } from "@/components/base/badges/badge-groups";
-import { AvatarLabelGroup } from "@/components/base/avatar/avatar-label-group";
+import React from 'react';
+import Image from 'next/image';
+import { Calendar, Ambulance, CheckCircle2, Stethoscope, ArrowRight } from 'lucide-react';
+import { BadgeGroup } from '@/components/base/badges/badge-groups';
+import HeroVideoDialog from '@/components/sections/discovery/HeroVideoDialog';
+import { HeroAppointmentCard, HeroWaitChip } from '@/components/sections/discovery/HeroAppointmentCard';
 
 interface HeroSectionProps {
   onOpenBooking: () => void;
 }
 
+const RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+/** Headline words; `accent` marks the single accent word (pattern C41). */
+const HEADLINE: { text: string; accent?: boolean }[] = [
+  { text: 'Your' },
+  { text: 'partner' },
+  { text: 'in' },
+  { text: 'health' },
+  { text: 'and' },
+  { text: 'wellness', accent: true },
+];
+
+const TRUST_POINTS = ['870+ specialist doctors', 'Instant digital booking', '24/7 Level 1 trauma care'];
+
+/**
+ * Staggered entrance via CSS (`motion-safe:animate-fade-up`), so the words
+ * start animating on first paint without waiting for hydration, and are
+ * simply static under reduced motion.
+ */
+function stagger(index: number, base = 0): React.CSSProperties {
+  return { animationDelay: `${base + index * 60}ms` };
+}
+
 export default function HeroSection({ onOpenBooking }: HeroSectionProps) {
-  const [videoOpen, setVideoOpen] = useState(false);
-
   return (
-    <>
-      <section id="home" className="relative bg-gradient-to-b from-[#F0F6FB] via-[#EBF3FB] to-white pt-12 pb-20 lg:pt-16 lg:pb-28 overflow-hidden">
-        {/* Soft Organic Curved Background Accents */}
-        <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-blue-100/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-        <div className="absolute bottom-10 left-0 w-80 h-80 bg-sky-100/40 rounded-full blur-2xl -ml-20 pointer-events-none" />
+    <section
+      id="home"
+      aria-labelledby="hero-title"
+      className="relative overflow-hidden bg-gradient-to-b from-prohealth-tint via-prohealth-ice/70 to-white pb-16 pt-8 sm:pt-10 lg:pb-20 lg:pt-12"
+    >
+      <div className="pointer-events-none absolute right-0 top-0 -mr-32 -mt-32 h-[32rem] w-[32rem] rounded-full bg-blue-100/50 blur-3xl" aria-hidden="true" />
 
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-16 items-center">
-            {/* Hero Left Content */}
-            <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
-              {/* Badge above headline */}
-              <div>
-                <BadgeGroup addonText="Verified" color="success" theme="light" align="trailing" size="md">
-                  All Solutions For Your Health • Level 1 Trauma Care
-                </BadgeGroup>
-              </div>
+      <div className="relative z-10 mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12 xl:px-20">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 xl:gap-16">
+          {/* Copy */}
+          <div className="space-y-6 lg:col-span-7">
+            <BadgeGroup addonText="Verified" color="success" theme="light" align="trailing" size="md">
+              All solutions for your health • Level 1 trauma care
+            </BadgeGroup>
 
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-[76px] font-extrabold tracking-tight text-prohealth-heading leading-[1.08] font-display">
-                Your Partner in <br />
-                <span className="text-prohealth-primary">Health</span> and{' '}
-                <span className="text-prohealth-secondary">Wellness</span>
-              </h1>
+            <h1 id="hero-title" className="max-w-3xl font-display text-display-lg text-prohealth-heading xl:text-[4.25rem]">
+              {HEADLINE.map((word, i) => (
+                <React.Fragment key={word.text}>
+                  <span
+                    className={`inline-block motion-safe:animate-fade-up ${word.accent ? 'text-prohealth-secondary' : ''}`}
+                    style={stagger(i)}
+                  >
+                    {word.text}
+                  </span>
+                  {i < HEADLINE.length - 1 ? ' ' : null}
+                </React.Fragment>
+              ))}
+            </h1>
 
-              {/* Subtext */}
-              <p className="text-base sm:text-xl text-prohealth-body max-w-3xl leading-relaxed">
-                We are committed to providing you with the best medical care and exceptional healthcare services. Delivering world-class clinical specialty care, robotic surgery, and round-the-clock emergency support.
-              </p>
+            <p className="max-w-xl text-base leading-relaxed text-prohealth-body motion-safe:animate-fade-up sm:text-lead" style={stagger(HEADLINE.length)}>
+              World-class specialty care, robotic surgery and round-the-clock emergency support, with clear plans and
+              people who listen.
+            </p>
 
-              {/* CTA Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                <button
-                  onClick={onOpenBooking}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-prohealth-primary hover:bg-prohealth-primary-hover text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-prohealth-primary/20 hover:shadow-prohealth-primary/30 transition-all text-sm active:scale-95"
-                >
-                  <Calendar className="w-4 h-4 text-white" />
-                  <span>Book an Appointment</span>
-                </button>
-
-                {/* Video Play Button CTA */}
-                <button
-                  onClick={() => setVideoOpen(true)}
-                  className="flex items-center gap-3 text-prohealth-heading hover:text-prohealth-primary transition-colors py-2 px-4 rounded-full group"
-                >
-                  <div className="w-11 h-11 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-prohealth-primary group-hover:scale-110 transition-transform">
-                    <Play className="w-4 h-4 fill-prohealth-primary ml-0.5" />
-                  </div>
-                  <span className="text-sm font-bold">See how we work</span>
-                </button>
-              </div>
-
-              {/* Trust bullet points */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-6 border-t border-slate-200/80 text-left">
-                <div className="flex items-center gap-2 text-xs font-semibold text-prohealth-body">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>870+ Specialist Doctors</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-prohealth-body">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Instant Digital Booking</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-prohealth-body">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>24/7 Level 1 Trauma Care</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero Right Visual & Floating Social Proof Badges */}
-            <div className="lg:col-span-5 relative flex justify-center">
-              {/* Organic shape backdrop */}
-              <div className="relative w-full max-w-lg">
-                <div className="relative rounded-3xl bg-gradient-to-tr from-[#1F5084]/10 via-[#2B78C6]/15 to-sky-100/80 p-8 sm:p-10 overflow-hidden border border-white/60 shadow-prohealth-lg">
-                  {/* Decorative Medical Cross Background */}
-                  <div className="absolute top-4 right-4 text-prohealth-primary/10">
-                    <Stethoscope className="w-36 h-36" />
-                  </div>
-
-                  {/* Doctor Showcase Card */}
-                  <div className="relative z-10 space-y-5">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-prohealth-primary to-prohealth-secondary text-white flex items-center justify-center shadow-md">
-                      <Stethoscope className="w-10 h-10" />
-                    </div>
-
-                    <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-prohealth-secondary">
-                        Chief Medical Board
-                      </span>
-                      <h3 className="text-2xl font-extrabold text-prohealth-heading mt-0.5">
-                        Dr. Elena Rostova, MD, PhD
-                      </h3>
-                      <p className="text-xs sm:text-sm text-prohealth-body mt-1">
-                        Senior Neurologist & Academic Director • Johns Hopkins Fellow
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-white/95 rounded-2xl border border-slate-100 shadow-sm space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-slate-700">Patient Recovery Rate</span>
-                        <span className="font-bold text-emerald-600 text-sm">99.4%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2.5">
-                        <div className="bg-emerald-500 h-2.5 rounded-full w-[99.4%]" />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Accepting New Patients Today</span>
-                      </div>
-                      <span className="text-slate-400 font-mono font-medium">OPD Room 402</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Social Proof Badge 1: 150K+ Patient Recover */}
-                <div className="absolute -bottom-6 -left-4 sm:-left-8 bg-white rounded-2xl p-4 shadow-prohealth border border-slate-100 flex items-center gap-3.5 animate-in slide-in-from-bottom-4 duration-500">
-                  <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <p className="text-base font-extrabold text-prohealth-heading">150K+</p>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100" />
-                    </div>
-                    <p className="text-xs text-prohealth-muted font-medium">Patients Recovered</p>
-                  </div>
-                </div>
-
-                {/* Floating Social Proof Badge 2: 870+ Doctors */}
-                <div className="absolute -top-4 -right-4 sm:-right-6 bg-white rounded-2xl p-4 shadow-prohealth border border-slate-100 flex items-center gap-3.5 animate-in slide-in-from-top-4 duration-500">
-                  <div className="w-12 h-12 rounded-full bg-prohealth-ice text-prohealth-primary flex items-center justify-center font-bold">
-                    <Stethoscope className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-base font-extrabold text-prohealth-heading">870+</p>
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    </div>
-                    <p className="text-xs text-prohealth-muted font-medium">Verified Physicians</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3 Quick Feature Cards Strip */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24">
-            {/* Card 1: Easy Appointment */}
-            <div className="prohealth-card p-6 bg-white hover:-translate-y-1 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-prohealth-ice text-prohealth-primary flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-prohealth-heading mb-2">Easy Appointment</h3>
-              <p className="text-xs text-prohealth-body leading-relaxed mb-4">
-                Schedule your medical consultation in under 60 seconds with instant digital confirmation and real-time slot availability.
-              </p>
+            {/* CTAs: no entrance animation, so the booking button is there on first paint */}
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
               <button
+                type="button"
                 onClick={onOpenBooking}
-                className="text-xs font-bold text-prohealth-primary hover:text-prohealth-secondary flex items-center gap-1.5 group-hover:gap-2 transition-all"
+                className={`group relative isolate inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-pill bg-primary px-7 py-4 text-sm font-semibold text-primary-foreground shadow-glow-primary before:absolute before:inset-0 before:-z-10 before:origin-left before:scale-x-0 before:rounded-pill before:bg-prohealth-primary-hover before:transition-transform before:duration-400 before:ease-out-soft hover:before:scale-x-100 focus-visible:before:scale-x-100 ${RING}`}
               >
-                <span>Book Online Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <span>Book an appointment</span>
+                <ArrowRight className="h-4 w-4 transition-transform duration-250 ease-out-soft group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
+              <HeroVideoDialog onOpenBooking={onOpenBooking} />
             </div>
 
-            {/* Card 2: 24/7 Service */}
-            <div className="prohealth-card p-6 bg-white hover:-translate-y-1 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Ambulance className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-prohealth-heading mb-2">24/7 Emergency Service</h3>
-              <p className="text-xs text-prohealth-body leading-relaxed mb-4">
-                Round-the-clock level-1 emergency trauma care, acute cardiac interventions, and dedicated ambulance dispatch network.
-              </p>
-              <a
-                href="tel:876256876"
-                className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 group-hover:gap-2 transition-all"
-              >
-                <span>Call Hotline: 876-256-876</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Card 3: Expert Doctors */}
-            <div className="prohealth-card p-6 bg-white hover:-translate-y-1 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Stethoscope className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-prohealth-heading mb-2">Expert Specialists</h3>
-              <p className="text-xs text-prohealth-body leading-relaxed mb-4">
-                Board-certified physicians, academic clinical researchers, and surgeons trained at world-renowned university hospitals.
-              </p>
-              <a
-                href="#doctors"
-                className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1.5 group-hover:gap-2 transition-all"
-              >
-                <span>Browse Doctor Catalog</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
+            <ul className="grid grid-cols-1 gap-2.5 border-t border-border pt-5 sm:grid-cols-3">
+              {TRUST_POINTS.map((point) => (
+                <li key={point} className="flex items-center gap-2 text-sm font-medium text-prohealth-body">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-care" aria-hidden="true" />
+                  {point}
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      </section>
 
-      {/* Video Modal Trigger */}
-      {videoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-3xl bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 overflow-hidden">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-prohealth-ice text-prohealth-primary flex items-center justify-center">
-                  <Play className="w-4 h-4 fill-prohealth-primary" />
-                </div>
-                <h3 className="text-base font-bold text-prohealth-heading">ProHealth Clinical Excellence Tour</h3>
+          {/* Visual: clinic photo with real UI floating over it (pattern C42) */}
+          <div className="relative lg:col-span-5">
+            <div className="relative mx-auto max-w-md lg:max-w-none">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-panel border border-white/70 bg-prohealth-ice shadow-lift sm:aspect-[5/4] lg:aspect-[4/5] lg:max-h-[34rem]">
+                <Image
+                  src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=1000"
+                  alt="Bright reception area at the ProHealth outpatient center"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 40vw, (min-width: 640px) 28rem, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-prohealth-heading/40 via-transparent to-transparent" aria-hidden="true" />
               </div>
-              <button
-                onClick={() => setVideoOpen(false)}
-                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="py-8 text-center space-y-4">
-              <div className="w-20 h-20 mx-auto rounded-full bg-prohealth-ice text-prohealth-primary flex items-center justify-center animate-pulse">
-                <Stethoscope className="w-10 h-10" />
-              </div>
-              <div className="max-w-md mx-auto">
-                <h4 className="text-lg font-extrabold text-prohealth-heading">Inside ProHealth Medical Center</h4>
-                <p className="text-xs text-prohealth-body mt-2 leading-relaxed">
-                  Take a virtual walk through our da Vinci robotic surgery suites, hybrid catheterization laboratories, and JCI-accredited intensive care units.
-                </p>
-              </div>
-              <div className="pt-2 flex justify-center gap-3">
-                <button
-                  onClick={() => {
-                    setVideoOpen(false);
-                    onOpenBooking();
-                  }}
-                  className="bg-prohealth-primary hover:bg-prohealth-primary-hover text-white text-xs font-bold px-6 py-2.5 rounded-full"
-                >
-                  Book a Consultation
-                </button>
-                <button
-                  onClick={() => setVideoOpen(false)}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-6 py-2.5 rounded-full"
-                >
-                  Close Tour
-                </button>
+              <HeroWaitChip className="absolute right-3 top-3 motion-safe:animate-fade-up sm:right-4 sm:top-4 lg:-right-4 lg:top-8" />
+              <div className="relative -mt-16 px-3 motion-safe:animate-fade-up sm:px-6 lg:absolute lg:-left-10 lg:bottom-8 lg:mt-0 lg:px-0" style={stagger(0, 250)}>
+                <HeroAppointmentCard />
               </div>
             </div>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Quick feature cards (static: the hotline must never wait on an animation) */}
+        <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3 lg:mt-20">
+          <FeatureCard
+            icon={<Calendar className="h-6 w-6" aria-hidden="true" />}
+            iconClass="bg-dept-blue-bg text-dept-blue-fg"
+            title="Easy appointment"
+            text="Schedule a consultation in under a minute with instant digital confirmation and real-time slot availability."
+          >
+            <button type="button" onClick={onOpenBooking} className={`${LINK} text-primary`}>
+              <span>Book online now</span>
+              <ArrowRight className={LINK_ARROW} aria-hidden="true" />
+            </button>
+          </FeatureCard>
+
+          <FeatureCard
+            icon={<Ambulance className="h-6 w-6" aria-hidden="true" />}
+            iconClass="bg-alert-soft text-alert"
+            title="24/7 emergency service"
+            text="Round-the-clock Level 1 trauma care, acute cardiac interventions and a dedicated ambulance dispatch network."
+          >
+            <a href="tel:876256876" className={`${LINK} text-alert`}>
+              <span>Call hotline: 876-256-876</span>
+              <ArrowRight className={LINK_ARROW} aria-hidden="true" />
+            </a>
+          </FeatureCard>
+
+          <FeatureCard
+            icon={<Stethoscope className="h-6 w-6" aria-hidden="true" />}
+            iconClass="bg-dept-green-bg text-dept-green-fg"
+            title="Expert specialists"
+            text="Board-certified physicians, clinical researchers and surgeons trained at world-renowned university hospitals."
+          >
+            <a href="#doctors" className={`${LINK} text-care`}>
+              <span>Browse doctor catalog</span>
+              <ArrowRight className={LINK_ARROW} aria-hidden="true" />
+            </a>
+          </FeatureCard>
+        </div>
+      </div>
+    </section>
   );
 }
 
+const LINK = `group/link inline-flex items-center gap-1.5 rounded-md text-sm font-semibold ${RING}`;
+const LINK_ARROW = 'h-4 w-4 transition-transform duration-250 ease-out-soft group-hover/link:translate-x-1';
+
+function FeatureCard({
+  icon,
+  iconClass,
+  title,
+  text,
+  children,
+}: {
+  icon: React.ReactNode;
+  iconClass: string;
+  title: string;
+  text: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="group rounded-card border border-border bg-white p-6 shadow-soft transition-[transform,box-shadow] duration-400 ease-out-soft hover:-translate-y-1 hover:shadow-lift">
+      <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${iconClass}`}>{icon}</div>
+      <h2 className="mb-2 font-display text-lg font-bold text-prohealth-heading">{title}</h2>
+      <p className="mb-4 text-sm leading-relaxed text-prohealth-body">{text}</p>
+      {children}
+    </div>
+  );
+}

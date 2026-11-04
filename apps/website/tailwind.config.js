@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  presets: [require('../../tailwind.preset.cjs')],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -31,7 +32,7 @@ module.exports = {
           cyan: '#0284c7',
           sky: '#38bdf8',
           accent: '#3B82F6',
-          emergency: '#ef4444',
+          emergency: '#DC2626',     // red-600, AA on white (4.83:1)
           light: '#F0F6FB',
           border: '#E4E7EC',
         },
