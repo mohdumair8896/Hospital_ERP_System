@@ -3,190 +3,184 @@
 import React from 'react';
 import Link from 'next/link';
 import { Award, ShieldCheck, CheckCircle2, ArrowRight, HeartPulse, Stethoscope, Sparkles, Building2 } from 'lucide-react';
+import { CountUp, Reveal, Stagger, StaggerItem } from '@/components/motion';
+
+const RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+/** Figures already published elsewhere on the site; final values stay in the DOM. */
+const STATS = [
+  { value: 45, suffix: '+', label: 'Years of compassionate care' },
+  { value: 450, suffix: '+', label: 'Inpatient hospital beds' },
+  { value: 18, suffix: 'K+', label: 'Successful surgeries a year' },
+  { value: 870, suffix: '+', label: 'Specialist doctors' },
+];
+
+const HIGHLIGHTS = [
+  { title: '24/7 Level 1 emergency trauma:', text: 'dedicated rapid-triage bays and acute resuscitation protocols.' },
+  { title: 'Qualified, board-certified specialists:', text: 'fellows from Harvard, Johns Hopkins and other top academic institutions.' },
+  { title: 'Cutting-edge robotic technologies:', text: 'da Vinci Xi surgical system and a robotic catheterization lab.' },
+];
+
+/**
+ * Only four awards, so they sit in a static grid with a calm hover (pattern
+ * C27 calls for a marquee only with 8+ logos). Nothing here moves on its own.
+ */
+const AWARDS = [
+  {
+    title: 'Malcolm Baldrige',
+    subtitle: 'National Quality Award',
+    desc: 'Recognized as a premier benchmark for healthcare operational performance and clinical safety.',
+    icon: Award,
+    badge: 'Gold tier',
+    tone: 'bg-dept-amber-bg text-dept-amber-fg',
+  },
+  {
+    title: 'HIMSS Davies',
+    subtitle: 'Stage 7 Digital Health',
+    desc: 'Highest global level for digital EHR integration, closed-loop medication and paperless clinical workflows.',
+    icon: HeartPulse,
+    badge: 'Stage 7',
+    tone: 'bg-dept-blue-bg text-dept-blue-fg',
+  },
+  {
+    title: 'Healthgrades Best',
+    subtitle: "America's 50 Best Hospitals",
+    desc: 'Top 1% in the nation for clinical outcomes in complex surgeries and critical emergency care.',
+    icon: Building2,
+    badge: 'Top 1%',
+    tone: 'bg-dept-rose-bg text-dept-rose-fg',
+  },
+  {
+    title: 'Joint Commission',
+    subtitle: 'Gold Seal of Approval',
+    desc: 'Accredited for exceeding international standards in patient safety, infection control and clinical governance.',
+    icon: ShieldCheck,
+    badge: 'Accredited',
+    tone: 'bg-dept-green-bg text-dept-green-fg',
+  },
+];
 
 export default function StatsAndTrust() {
-  const awards = [
-    {
-      title: 'Malcolm Baldrige',
-      subtitle: 'National Quality Award',
-      desc: 'Recognized as a premier benchmark for healthcare operational performance and clinical safety.',
-      icon: Award,
-      badge: 'Gold Tier',
-      color: 'text-amber-500 bg-amber-50 border-amber-100',
-    },
-    {
-      title: 'HIMSS Davies',
-      subtitle: 'Stage 7 Digital Health',
-      desc: 'Highest global level for digital EHR integration, closed-loop medication, and paperless clinical workflows.',
-      icon: HeartPulse,
-      badge: 'Stage 7',
-      color: 'text-prohealth-primary bg-prohealth-ice border-blue-100',
-    },
-    {
-      title: 'Healthgrades Best',
-      subtitle: "America's 50 Best Hospitals",
-      desc: 'Top 1% in the nation for superior clinical outcomes in complex surgeries and critical emergency care.',
-      icon: Building2,
-      badge: 'Top 1%',
-      color: 'text-sky-600 bg-sky-50 border-sky-100',
-    },
-    {
-      title: 'Joint Commission',
-      subtitle: 'Gold Seal of Approval',
-      desc: 'Accredited for exceeding international standards in patient safety, infection control, and clinical governance.',
-      icon: ShieldCheck,
-      badge: 'Accredited',
-      color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    },
-  ];
-
   return (
-    <section id="about" className="py-24 bg-white">
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
-        {/* About ProHealth Split Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-16 items-center mb-24">
-          {/* Left Visual with Floating "High Quality Professionals" Badge */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl bg-[#EAF2F9] p-4 sm:p-6 overflow-hidden border border-slate-100">
-              <div className="bg-white rounded-2xl p-6 sm:p-8 space-y-5 shadow-prohealth">
+    <section id="about" aria-labelledby="about-title" className="bg-white py-section">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-12 xl:px-20">
+        {/* About split */}
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 xl:gap-16">
+          <Reveal className="relative lg:col-span-6">
+            <div className="relative overflow-hidden rounded-panel border border-border bg-prohealth-ice p-4 sm:p-6">
+              <div className="space-y-5 rounded-card bg-white p-6 shadow-soft sm:p-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-prohealth-primary text-white flex items-center justify-center font-bold">
-                    <Stethoscope className="w-6 h-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                    <Stethoscope className="h-6 w-6" aria-hidden="true" />
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold text-prohealth-heading">
-                      ProHealth Clinical Faculty
-                    </h3>
-                    <p className="text-xs text-prohealth-muted">Over 45 Years of Compassionate Healing</p>
+                    <h3 className="font-display text-base font-bold text-prohealth-heading">ProHealth clinical faculty</h3>
+                    <p className="text-sm text-prohealth-muted">Over 45 years of compassionate healing</p>
                   </div>
                 </div>
-
-                <p className="text-xs sm:text-sm text-prohealth-body leading-relaxed">
-                  Our multidisciplinary departments unite board-certified physicians, trauma surgeons, and compassionate nurses. Every patient receives a tailored diagnostic protocol supported by high-definition 3T MRI, hybrid surgery suites, and robotic navigation.
+                <p className="text-sm leading-relaxed text-prohealth-body sm:text-base">
+                  Our multidisciplinary departments unite board-certified physicians, trauma surgeons and compassionate
+                  nurses. Every patient receives a tailored diagnostic protocol supported by high-definition 3T MRI,
+                  hybrid surgery suites and robotic navigation.
                 </p>
-
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                  <div className="p-3 bg-prohealth-canvas rounded-xl">
-                    <p className="text-xl font-extrabold text-prohealth-primary">450+</p>
-                    <p className="text-[11px] text-prohealth-muted font-medium">Inpatient Hospital Beds</p>
-                  </div>
-                  <div className="p-3 bg-prohealth-canvas rounded-xl">
-                    <p className="text-xl font-extrabold text-prohealth-primary">18K+</p>
-                    <p className="text-[11px] text-prohealth-muted font-medium">Annual Successful Surgeries</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Circular Badge: "High Quality Professionals" */}
-              <div className="absolute -bottom-2 -right-2 sm:bottom-4 sm:right-4 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-prohealth-lg border border-slate-100 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/30">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-extrabold text-prohealth-heading">High Quality</p>
-                  <p className="text-[11px] text-emerald-600 font-bold">Medical Professionals</p>
+                <div className="flex items-center gap-3 border-t border-border pt-5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-care text-white">
+                    <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <p className="text-sm font-semibold text-prohealth-heading">
+                    High-quality medical professionals
+                    <span className="block font-normal text-care">Board-certified, peer-reviewed every year</span>
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
 
-          {/* Right Text Content */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 bg-prohealth-ice px-3.5 py-1.5 rounded-full text-xs font-extrabold text-prohealth-primary">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>ABOUT PROHEALTH</span>
-            </div>
+          <div className="space-y-6 lg:col-span-6">
+            <Reveal>
+              <p className="inline-flex items-center gap-2 rounded-pill bg-secondary px-3.5 py-1.5 text-eyebrow uppercase text-primary">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                About ProHealth
+              </p>
+              <h2 id="about-title" className="mt-4 font-display text-display-md text-prohealth-heading">
+                A team of experienced medical professionals dedicated to top-quality care
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-prohealth-body">
+                Seeking medical care can feel vulnerable. That is why our care is built around clear communication,
+                transparent treatment plans and continuous clinical oversight.
+              </p>
+            </Reveal>
 
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-prohealth-heading leading-tight font-display">
-              ProHealth is a Team of Experienced Medical Professionals Dedicated to Providing Top-Quality Healthcare Services.
-            </h2>
+            <Stagger as="ul" className="space-y-3">
+              {HIGHLIGHTS.map((item) => (
+                <StaggerItem as="li" key={item.title} className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-care" aria-hidden="true" />
+                  <p className="text-sm text-prohealth-body sm:text-base">
+                    <strong className="font-semibold text-prohealth-heading">{item.title}</strong> {item.text}
+                  </p>
+                </StaggerItem>
+              ))}
+            </Stagger>
 
-            <p className="text-sm text-prohealth-body leading-relaxed">
-              We understand that seeking medical care can be a vulnerable experience. That is why our healthcare ecosystem is built around empathetic patient communication, transparent treatment plans, and continuous clinical oversight.
-            </p>
-
-            {/* Checklist items */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <p className="text-xs font-semibold text-slate-700">
-                  <strong className="text-slate-900">24/7 Level 1 Emergency Trauma:</strong> Dedicated rapid-triage bays and acute resuscitation protocols.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <p className="text-xs font-semibold text-slate-700">
-                  <strong className="text-slate-900">Qualified & Board-Certified Specialists:</strong> Fellows from Harvard, Johns Hopkins, and top academic institutions.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <p className="text-xs font-semibold text-slate-700">
-                  <strong className="text-slate-900">Cutting-Edge Robotic Technologies:</strong> da Vinci Xi surgical system and robotic catheterization lab.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-3">
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 bg-prohealth-primary hover:bg-prohealth-primary-hover text-white px-7 py-3 rounded-full text-xs font-bold shadow-md shadow-prohealth-primary/20 transition-all group"
-              >
-                <span>Learn More About Us</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
+            <Link
+              href="/about"
+              className={`group inline-flex items-center gap-2 rounded-pill bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition-colors duration-250 hover:bg-prohealth-primary-hover ${RING}`}
+            >
+              <span>Learn more about us</span>
+              <ArrowRight className="h-4 w-4 transition-transform duration-250 ease-out-soft group-hover:translate-x-1" aria-hidden="true" />
+            </Link>
           </div>
         </div>
 
-        {/* 4 Awards & Accreditation Cards */}
-        <div>
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-1.5 text-prohealth-primary text-xs font-extrabold uppercase tracking-wider mb-2">
-              <Award className="w-3.5 h-3.5" />
-              <span>AWARDS & RECOGNITIONS</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-prohealth-heading font-display">
-              Excellence Benchmarked by Global Healthcare Standards
-            </h2>
-          </div>
+        {/* Count-up stats (pattern C05) */}
+        <Stagger as="div" className="mt-16 grid grid-cols-2 gap-4 sm:gap-6 lg:mt-24 lg:grid-cols-4">
+          {STATS.map((stat) => (
+            <StaggerItem key={stat.label} className="rounded-card border border-border bg-prohealth-tint p-5 sm:p-6">
+              <dl className="flex flex-col-reverse gap-1">
+                <dt className="text-sm font-medium text-prohealth-body">{stat.label}</dt>
+                <dd>
+                  <CountUp value={stat.value} suffix={stat.suffix} className="font-display text-display-md text-primary" />
+                </dd>
+              </dl>
+            </StaggerItem>
+          ))}
+        </Stagger>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {awards.map((a, idx) => {
+        {/* Awards and accreditation: static grid with hover (fewer than 8 items) */}
+        <div className="mt-section">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="inline-flex items-center gap-1.5 text-eyebrow uppercase text-primary">
+              <Award className="h-3.5 w-3.5" aria-hidden="true" />
+              Awards and recognitions
+            </p>
+            <h2 className="mt-3 font-display text-display-md text-prohealth-heading">
+              Excellence benchmarked by global healthcare standards
+            </h2>
+          </Reveal>
+
+          <Stagger as="ul" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {AWARDS.map((a) => {
               const Icon = a.icon;
               return (
-                <div
-                  key={idx}
-                  className="prohealth-card p-6 bg-white hover:-translate-y-1 transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${a.color}`}>
-                        <Icon className="w-6 h-6" />
+                <StaggerItem as="li" key={a.title} className="flex">
+                  {/* Hover lives on an inner box: the motion item owns its own transform. */}
+                  <div className="group w-full rounded-card border border-border bg-white p-6 shadow-soft transition-[transform,box-shadow,border-color] duration-400 ease-out-soft hover:-translate-y-1 hover:border-primary/30 hover:shadow-lift">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${a.tone}`}>
+                        <Icon className="h-6 w-6 transition-transform duration-400 ease-out-soft group-hover:scale-[1.04]" aria-hidden="true" />
                       </div>
-                      <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                        {a.badge}
-                      </span>
+                      <span className="rounded-pill bg-muted px-2.5 py-1 text-xs font-semibold text-prohealth-heading">{a.badge}</span>
                     </div>
-                    <h3 className="text-base font-extrabold text-prohealth-heading mb-1">{a.title}</h3>
-                    <p className="text-xs font-bold text-prohealth-primary mb-2">{a.subtitle}</p>
-                    <p className="text-xs text-prohealth-body leading-relaxed">{a.desc}</p>
+                    <h3 className="mb-1 font-display text-base font-bold text-prohealth-heading">{a.title}</h3>
+                    <p className="mb-2 text-sm font-semibold text-primary">{a.subtitle}</p>
+                    <p className="text-sm leading-relaxed text-prohealth-body">{a.desc}</p>
                   </div>
-                </div>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </div>
       </div>
     </section>
   );
 }
-

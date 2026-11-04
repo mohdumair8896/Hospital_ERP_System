@@ -5,6 +5,7 @@ import TopEmergencyBar from '../../components/TopEmergencyBar';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import EmergencyFAB from '../../components/EmergencyFAB';
+import { HistoryTimeline } from '../../components/content/HistoryTimeline';
 import { 
   Award, 
   ShieldCheck, 
@@ -178,6 +179,11 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* History timeline (C11), client leaf */}
+          <div className="pt-8">
+            <HistoryTimeline />
           </div>
 
           {/* Accreditations Grid */}

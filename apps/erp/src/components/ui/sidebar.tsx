@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { motion } from "framer-motion"
 import { PanelLeft } from "lucide-react"
 import { cn } from "cn"
 
@@ -19,6 +21,8 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  /** The header toggle; focus returns here when the mobile drawer closes. */
+  triggerRef: React.MutableRefObject<HTMLButtonElement | null>
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -53,6 +57,7 @@ export const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderP
   ) => {
     const [isMobile, setIsMobile] = React.useState(false)
     const [openMobile, setOpenMobile] = React.useState(false)
+    const triggerRef = React.useRef<HTMLButtonElement | null>(null)
 
     // Internal open state
     const [_open, _setOpen] = React.useState(defaultOpen)
@@ -114,6 +119,7 @@ export const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderP
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        triggerRef,
       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
@@ -161,13 +167,13 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, triggerRef } = useSidebar()
 
     if (collapsible === "none") {
       return (
         <div
           className={cn(
-            "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground border-r",
+            "flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground border-r",
             className
           )}
           ref={ref}
@@ -178,33 +184,34 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       )
     }
 
+    // Mobile drawer on Radix Dialog: focus trap, Escape and overlay click close it,
+    // and focus returns to the header toggle.
     if (isMobile) {
       return (
-        <>
-          {openMobile && (
-            <div
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setOpenMobile(false)}
-            />
-          )}
-          <div
-            className={cn(
-              "fixed inset-y-0 z-50 flex w-72 flex-col bg-sidebar p-2 shadow-2xl transition-transform duration-300 ease-in-out",
-              side === "left"
-                ? openMobile
-                  ? "translate-x-0 left-0"
-                  : "-translate-x-full left-0"
-                : openMobile
-                ? "translate-x-0 right-0"
-                : "translate-x-full right-0",
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
-        </>
+        <DialogPrimitive.Root open={openMobile} onOpenChange={setOpenMobile}>
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-xs data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 duration-250" />
+            <DialogPrimitive.Content
+              aria-describedby={undefined}
+              onCloseAutoFocus={(event) => {
+                event.preventDefault()
+                triggerRef.current?.focus()
+              }}
+              className={cn(
+                "fixed inset-y-0 z-50 flex w-72 max-w-[85vw] flex-col bg-sidebar p-2 text-sidebar-foreground shadow-lift outline-none duration-250 ease-out-soft data-[state=open]:animate-in data-[state=closed]:animate-out",
+                side === "left"
+                  ? "left-0 data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left"
+                  : "right-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
+                className
+              )}
+              ref={ref}
+              {...props}
+            >
+              <DialogPrimitive.Title className="sr-only">Main navigation</DialogPrimitive.Title>
+              {children}
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       )
     }
 
@@ -248,14 +255,23 @@ export const SidebarTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button">
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, triggerRef, isMobile, open, openMobile } = useSidebar()
+  const setRefs = React.useCallback(
+    (node: HTMLButtonElement | null) => {
+      triggerRef.current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref, triggerRef]
+  )
 
   return (
     <button
-      ref={ref}
+      ref={setRefs}
       type="button"
       data-sidebar="trigger"
       aria-label="Toggle Sidebar"
+      aria-expanded={isMobile ? openMobile : open}
       className={cn(
         "inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background p-0 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className
@@ -474,7 +490,9 @@ export interface SidebarMenuButtonProps
 export const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
   SidebarMenuButtonProps
->(({ className, isActive = false, render, size = "default", children, ...props }, ref) => {
+>(({ className, isActive = false, render, size = "default", children, onClick, ...props }, ref) => {
+  const { isMobile, setOpenMobile } = useSidebar()
+
   if (render) {
     return (
       <div
@@ -489,23 +507,40 @@ export const SidebarMenuButton = React.forwardRef<
     )
   }
 
+  // The active background is a shared-layout element, so it slides between items
+  // (framer-motion `layoutId`; disabled under reduced motion by the root MotionConfig).
   return (
     <button
       ref={ref}
+      type="button"
       data-sidebar="menu-button"
       data-active={isActive}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex w-full items-center gap-2.5 overflow-hidden rounded-lg px-3 py-2 text-left text-sm font-medium outline-none transition-colors hover:bg-muted/80 focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50",
+        "group/menu-button relative flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50",
         isActive
-          ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-          : "text-muted-foreground hover:text-foreground",
+          ? "font-semibold text-primary-foreground"
+          : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
         size === "sm" && "h-8 text-xs px-2.5",
         size === "lg" && "h-11 text-base px-3.5",
         className
       )}
+      onClick={(event) => {
+        onClick?.(event)
+        if (isMobile && !event.defaultPrevented) setOpenMobile(false)
+      }}
       {...props}
     >
-      {children}
+      {isActive && (
+        <motion.span
+          layoutId="sidebar-active-indicator"
+          aria-hidden="true"
+          className="absolute inset-0 bg-primary shadow-xs"
+          style={{ borderRadius: 8 }}
+          transition={{ type: "tween", duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        />
+      )}
+      <span className="relative flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">{children}</span>
     </button>
   )
 })
@@ -530,16 +565,22 @@ export const SidebarMenuAction = React.forwardRef<
 })
 SidebarMenuAction.displayName = "SidebarMenuAction"
 
+/**
+ * Small inline badge at the right edge of a menu item. Render it as the LAST child of
+ * `SidebarMenuButton` (the label truncates before it); it inverts on the active item.
+ */
 export const SidebarMenuBadge = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
+  HTMLSpanElement,
+  React.ComponentProps<"span">
 >(({ className, ...props }, ref) => {
   return (
-    <div
+    <span
       ref={ref}
       data-sidebar="menu-badge"
       className={cn(
-        "pointer-events-none ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary group-data-[collapsible=icon]:hidden",
+        "pointer-events-none ml-auto inline-flex h-[18px] shrink-0 items-center rounded px-1.5 text-[10px] font-semibold leading-none tracking-wide",
+        "bg-primary/10 text-primary group-data-[active=true]/menu-button:bg-primary-foreground/15 group-data-[active=true]/menu-button:text-primary-foreground",
+        "group-data-[collapsible=icon]:hidden",
         className
       )}
       {...props}

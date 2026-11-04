@@ -21,28 +21,33 @@ export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | undefined>(undefined);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | undefined>(undefined);
+  const [triageReason, setTriageReason] = useState<string | undefined>(undefined);
 
   const handleOpenBooking = () => {
     setSelectedDoctorId(undefined);
     setSelectedDepartmentId(undefined);
+    setTriageReason(undefined);
     setBookingOpen(true);
   };
 
   const handleSelectDoctor = (doctorId: string) => {
     setSelectedDoctorId(doctorId);
     setSelectedDepartmentId(undefined);
+    setTriageReason(undefined);
     setBookingOpen(true);
   };
 
   const handleSelectDepartment = (deptId: string) => {
     setSelectedDepartmentId(deptId);
     setSelectedDoctorId(undefined);
+    setTriageReason(undefined);
     setBookingOpen(true);
   };
 
-  const handleScheduleFromTriage = (doctorId: string, departmentId: string) => {
+  const handleScheduleFromTriage = (doctorId: string, departmentId: string, symptomsText: string) => {
     setSelectedDoctorId(doctorId);
     setSelectedDepartmentId(departmentId);
+    setTriageReason(symptomsText);
     setBookingOpen(true);
   };
 
@@ -51,19 +56,19 @@ export default function HomePage() {
       {/* 1. Top Emergency Bar */}
       <TopEmergencyBar />
 
-      {/* 2. Main Navigation with Search Modal & Sidebar Drawer */}
+      {/* 2. Sticky navigation: condenses into a pill after 80px; full-screen menu below 1280px */}
       <Navbar onOpenBooking={handleOpenBooking} />
 
-      {/* 3. ProHealth Hero Section with 3 Feature Boxes & Social Proof Badges */}
+      {/* 3. Hero: staggered headline, next-available-appointment card, feature cards */}
       <HeroSection onOpenBooking={handleOpenBooking} />
 
-      {/* 4. About ProHealth Section & 4 Quality Awards */}
+      {/* 4. About, count-up stats and awards grid (py-section) */}
       <StatsAndTrust />
 
-      {/* 5. Clinical Departments in Ice-Blue Curved Container */}
+      {/* 5. Departments: tabbed split card, one pastel per department (py-section) */}
       <DepartmentsShowcase onSelectDepartment={handleSelectDepartment} />
 
-      {/* 6. Qualified Specialist Doctors Directory with Category Pills */}
+      {/* 6. Doctor directory: animated specialty filter and card grid (py-section) */}
       <DoctorDirectory onSelectDoctor={handleSelectDoctor} />
 
       {/* 7. In-Page Appointment Booking Form with 24/7 Emergency Hotline */}
@@ -78,7 +83,7 @@ export default function HomePage() {
       {/* 10. Medical Insights & Health Articles Blog */}
       <HealthInsights />
 
-      {/* 11. Full-width Emergency Ambulance Callout Banner */}
+      {/* 11. Emergency callout: never wrapped in a reveal, the number shows on first paint */}
       <EmergencyBanner onOpenBooking={handleOpenBooking} />
 
       {/* 12. 4-Column ProHealth Navy Footer with Newsletter & Back-to-Top */}
@@ -96,6 +101,7 @@ export default function HomePage() {
         onClose={() => setBookingOpen(false)}
         preselectedDoctorId={selectedDoctorId}
         preselectedDepartmentId={selectedDepartmentId}
+        initialSymptoms={triageReason}
       />
     </main>
   );

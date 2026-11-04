@@ -6,19 +6,11 @@ import TopEmergencyBar from '../../../components/TopEmergencyBar';
 import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
 import EmergencyFAB from '../../../components/EmergencyFAB';
+import DepartmentServiceStack from '../../../components/appointment/DepartmentServiceStack';
+import WhatToExpect from '../../../components/appointment/WhatToExpect';
+import { Reveal } from '@/components/motion';
 import { DEPARTMENTS, DOCTORS } from '../../../data/hospitalData';
-import { 
-  ChevronRight, 
-  CheckCircle2, 
-  Calendar, 
-  Stethoscope, 
-  ShieldCheck, 
-  Building2, 
-  Cpu, 
-  Clock, 
-  PhoneCall,
-  User
-} from 'lucide-react';
+import { ChevronRight, CheckCircle2, Calendar, ShieldCheck, Building2, Cpu, PhoneCall } from 'lucide-react';
 
 interface Props {
   params: { id: string };
@@ -39,6 +31,9 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+const H2 = 'font-display text-2xl font-bold text-foreground';
+
 export default function DepartmentDetailPage({ params }: Props) {
   const dept = DEPARTMENTS.find((d) => d.id === params.id);
   if (!dept) notFound();
@@ -46,201 +41,182 @@ export default function DepartmentDetailPage({ params }: Props) {
   const deptDoctors = DOCTORS.filter((doc) => doc.departmentId === dept.id);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-background">
       <TopEmergencyBar />
       <Navbar />
 
-      {/* Header Banner */}
-      <section className="relative py-16 overflow-hidden" style={{background: 'linear-gradient(135deg, #EAF2F9 0%, #F0F6FB 50%, #FFFFFF 100%)'}}>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
-        <div className="relative max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
-          <nav className="flex items-center gap-2 text-xs text-slate-500 mb-4">
-            <Link href="/" className="hover:text-[#1F5084]">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link href="/departments" className="hover:text-[#1F5084]">Departments</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-[#1F5084] font-semibold">{dept.name}</span>
+      {/* Header */}
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-prohealth-ice via-prohealth-tint to-background py-12 sm:py-16">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" aria-hidden="true" />
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+          <nav aria-label="Breadcrumb" className="mb-5">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <li><Link href="/" className={`rounded-sm hover:text-primary ${FOCUS_RING}`}>Home</Link></li>
+              <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
+              <li><Link href="/departments" className={`rounded-sm hover:text-primary ${FOCUS_RING}`}>Departments</Link></li>
+              <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
+              <li aria-current="page" className="font-semibold text-foreground">{dept.name}</li>
+            </ol>
           </nav>
 
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1F5084]/10 border border-[#1F5084]/20 text-[#1F5084] text-xs font-semibold">
-              <Building2 className="w-3.5 h-3.5" />
+          <div className="max-w-3xl space-y-4">
+            <p className="inline-flex flex-wrap items-center gap-2 rounded-pill border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+              <Building2 className="w-4 h-4" aria-hidden="true" />
               <span>{dept.location}</span>
-              <span>•</span>
-              <span>{dept.beds} Dedicated Inpatient Beds</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight font-display text-[#1D2939]">
-              {dept.name}
-            </h1>
-            <p className="text-sm text-[#475467] leading-relaxed max-w-2xl">
-              {dept.shortDesc}
+              <span aria-hidden="true">·</span>
+              <span>{dept.beds} inpatient beds</span>
             </p>
+            <h1 className="font-display text-display-md text-foreground">{dept.name}</h1>
+            <p className="text-base sm:text-lead text-prohealth-body max-w-2xl">{dept.shortDesc}</p>
+            <Link
+              href={`/appointments?dept=${dept.id}`}
+              className={`inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-prohealth-primary-hover transition-colors lg:hidden ${FOCUS_RING}`}
+            >
+              <Calendar className="w-4 h-4" aria-hidden="true" />
+              Book a visit
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Detail Content */}
-      <section className="py-16 bg-white">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Main Information Column */}
-            <div className="lg:col-span-2 space-y-12">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-900 font-display">
-                  Institute Overview & Clinical Philosophy
+      {/* Detail content */}
+      <section className="py-12 lg:py-16">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-10 xl:gap-16">
+            <div className="min-w-0 space-y-16">
+              <Reveal as="section" aria-labelledby="overview-heading" className="space-y-4">
+                <h2 id="overview-heading" className={H2}>Overview and clinical philosophy</h2>
+                <p className="text-base leading-relaxed text-prohealth-body max-w-prose">{dept.fullDesc}</p>
+              </Reveal>
+
+              <Reveal as="section" aria-labelledby="conditions-heading" className="space-y-4">
+                <h2 id="conditions-heading" className={`flex items-center gap-2 ${H2}`}>
+                  <ShieldCheck className="w-6 h-6 text-primary" aria-hidden="true" />
+                  Conditions we treat
                 </h2>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {dept.fullDesc}
-                </p>
-              </div>
-
-              {/* Conditions Treated */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-cyan-600" />
-                  <span>Primary Conditions & Pathologies Treated</span>
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {dept.conditionsTreated.map((cond, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span className="text-xs text-slate-700 font-medium">{cond}</span>
-                    </div>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {dept.conditionsTreated.map((cond) => (
+                    <li key={cond} className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/50 p-3.5">
+                      <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-care" aria-hidden="true" />
+                      <span className="text-sm font-medium text-foreground">{cond}</span>
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </Reveal>
 
-              {/* Procedures Offered */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Stethoscope className="w-5 h-5 text-cyan-600" />
-                  <span>Surgical & Diagnostic Procedures</span>
-                </h3>
-                <div className="space-y-2.5">
-                  {dept.proceduresOffered.map((proc, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-800">{proc}</span>
-                      <span className="text-[10px] uppercase font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
-                        Certified Care Path
-                      </span>
-                    </div>
+              {/* Stacked service cards (C04): not wrapped in Reveal so sticky stays simple */}
+              <section aria-labelledby="services-heading" className="space-y-5">
+                <div className="space-y-2">
+                  <p className="text-eyebrow uppercase text-muted-foreground">Services</p>
+                  <h2 id="services-heading" className={H2}>Procedures and diagnostics</h2>
+                </div>
+                <DepartmentServiceStack services={dept.proceduresOffered} location={dept.location} headingId="services-heading" />
+              </section>
+
+              <section aria-labelledby="expect-heading" className="space-y-8">
+                <div className="space-y-2">
+                  <p className="text-eyebrow uppercase text-muted-foreground">Your visit</p>
+                  <h2 id="expect-heading" className={H2}>What to expect</h2>
+                </div>
+                <WhatToExpect departmentId={dept.id} location={dept.location} headingId="expect-heading" />
+              </section>
+
+              <Reveal as="section" aria-labelledby="tech-heading" className="space-y-4">
+                <h2 id="tech-heading" className={`flex items-center gap-2 ${H2}`}>
+                  <Cpu className="w-6 h-6 text-primary" aria-hidden="true" />
+                  Diagnostic and robotic systems
+                </h2>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {dept.technologies.map((tech) => (
+                    <li key={tech} className="flex items-center gap-2.5 rounded-xl border border-dept-blue-bg bg-dept-blue-bg/60 p-3.5 text-sm font-medium text-foreground">
+                      <span className="w-2 h-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                      {tech}
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </Reveal>
 
-              {/* Technologies */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-indigo-600" />
-                  <span>Specialized Diagnostic & Robotic Systems</span>
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {dept.technologies.map((tech, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-100 text-xs font-medium text-indigo-950 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />
-                      <span>{tech}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Department Faculty / Doctors */}
               {deptDoctors.length > 0 && (
-                <div className="space-y-5 pt-4">
-                  <h3 className="text-lg font-bold text-slate-900">Department Physicians & Specialists</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <Reveal as="section" aria-labelledby="doctors-heading" className="space-y-5">
+                  <h2 id="doctors-heading" className={H2}>Physicians and specialists</h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {deptDoctors.map((doc) => (
-                      <div key={doc.id} className="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center gap-4">
-                        <img
-                          src={doc.avatarUrl}
-                          alt={doc.name}
-                          className="w-16 h-16 rounded-xl object-cover"
-                        />
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-bold text-slate-900">{doc.name}</h4>
-                          <p className="text-[11px] text-cyan-700 font-medium">{doc.specialty}</p>
-                          <div className="flex items-center gap-3 pt-1">
-                            <Link
-                              href={`/doctors/${doc.id}`}
-                              className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 underline"
-                            >
-                              Profile
+                      <li key={doc.id} className="flex items-center gap-4 rounded-card border border-border bg-card p-4 shadow-soft">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={doc.avatarUrl} alt="" width={64} height={64} className="w-16 h-16 rounded-xl object-cover" />
+                        <div className="min-w-0 space-y-1">
+                          <h3 className="text-sm font-bold text-foreground">{doc.name}</h3>
+                          <p className="text-sm font-medium text-primary">{doc.specialty}</p>
+                          <div className="flex items-center gap-4 pt-1 text-sm">
+                            <Link href={`/doctors/${doc.id}`} className={`rounded-sm font-semibold text-muted-foreground underline hover:text-foreground ${FOCUS_RING}`}>
+                              Profile<span className="sr-only"> of {doc.name}</span>
                             </Link>
-                            <Link
-                              href={`/appointments?doc=${doc.id}`}
-                              className="text-[11px] font-bold text-cyan-700 hover:text-cyan-800"
-                            >
-                              Book Slot
+                            <Link href={`/appointments?doc=${doc.id}`} className={`rounded-sm font-semibold text-primary hover:underline ${FOCUS_RING}`}>
+                              Book<span className="sr-only"> with {doc.name}</span>
                             </Link>
                           </div>
                         </div>
-                      </div>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ul>
+                </Reveal>
               )}
             </div>
 
-            {/* Sidebar Widget Column */}
-            <div className="space-y-6">
-              {/* Direct Booking Card */}
-              <div className="bg-[#1F5084] text-white p-6 rounded-3xl shadow-xl space-y-4">
-                <div className="inline-block text-[10px] font-bold uppercase tracking-wider text-sky-200 bg-white/10 px-2.5 py-1 rounded border border-white/20">
-                  Priority Access
-                </div>
-                <h3 className="text-xl font-bold font-display">Schedule a Department Appointment</h3>
-                <p className="text-xs text-sky-100 leading-relaxed">
-                  Direct online reservation for initial clinical consultations, pre-operative clearances, and second opinions.
+            {/* Sidebar */}
+            <aside aria-label="Book and department facts" className="space-y-6">
+              <div className="bg-primary text-primary-foreground p-6 rounded-panel shadow-lift space-y-4">
+                <p className="inline-block text-eyebrow uppercase text-sky-100 bg-white/10 px-2.5 py-1 rounded border border-white/20">
+                  Priority access
+                </p>
+                <h2 className="text-xl font-bold font-display">Book a department appointment</h2>
+                <p className="text-sm text-sky-100 leading-relaxed">
+                  First consultations, pre-operative clearances and second opinions.
                 </p>
                 <Link
                   href={`/appointments?dept=${dept.id}`}
-                  className="w-full bg-white hover:bg-sky-50 text-[#1F5084] font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                  className={`w-full bg-white hover:bg-sky-50 text-primary font-semibold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary`}
                 >
-                  <Calendar className="w-4 h-4" />
-                  Book Department Visit
+                  <Calendar className="w-4 h-4" aria-hidden="true" />
+                  Book a department visit
                 </Link>
               </div>
 
-              {/* Department Facts */}
-              <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-4 text-xs">
-                <h4 className="font-bold text-slate-900 text-sm">Key Department Metrics</h4>
-                <div className="space-y-3 text-slate-600">
-                  <div className="flex justify-between pb-2 border-b border-slate-200">
-                    <span>Department Chair:</span>
-                    <strong className="text-slate-900">{dept.leadPhysician}</strong>
+              <div className="bg-muted/50 border border-border p-6 rounded-card text-sm">
+                <h2 className="font-bold text-foreground text-base mb-3">Department facts</h2>
+                <dl className="space-y-3 text-muted-foreground">
+                  {[
+                    ['Department chair', dept.leadPhysician],
+                    ['Location', dept.location],
+                    ['Inpatient beds', `${dept.beds}`],
+                    ['Patients a year', dept.annualProcedures],
+                  ].map(([term, value]) => (
+                    <div key={term} className="flex justify-between gap-3 pb-2 border-b border-border">
+                      <dt>{term}</dt>
+                      <dd className="text-right font-semibold text-foreground">{value}</dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-3">
+                    <dt>24/7 emergency support</dt>
+                    <dd className={dept.emergencySupport ? 'font-bold text-alert' : 'text-muted-foreground'}>
+                      {dept.emergencySupport ? 'Active 24/7' : 'Scheduled hours'}
+                    </dd>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-slate-200">
-                    <span>Location:</span>
-                    <span className="font-medium text-slate-800">{dept.location}</span>
-                  </div>
-                  <div className="flex justify-between pb-2 border-b border-slate-200">
-                    <span>Inpatient Bed Capacity:</span>
-                    <span className="font-semibold text-slate-900">{dept.beds} Beds</span>
-                  </div>
-                  <div className="flex justify-between pb-2 border-b border-slate-200">
-                    <span>Annual Patient Volumes:</span>
-                    <span className="font-semibold text-cyan-700">{dept.annualProcedures}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>24/7 Emergency Support:</span>
-                    <span className={dept.emergencySupport ? 'text-red-600 font-bold' : 'text-slate-500'}>
-                      {dept.emergencySupport ? 'Active 24/7' : 'Scheduled Hours'}
-                    </span>
-                  </div>
-                </div>
+                </dl>
               </div>
 
-              {/* Emergency Ribbon */}
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-950 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-xs text-red-700">
-                  <PhoneCall className="w-4 h-4" />
-                  <span>Immediate Medical Emergency?</span>
-                </div>
-                <p className="text-[11px] text-red-800">
-                  Call our 24/7 Emergency Trauma Desk directly at <strong className="text-red-950">876-256-876</strong> or proceed to the dedicated ground-floor entrance.
+              <div className="p-4 rounded-card bg-alert-soft border border-alert/20 space-y-2">
+                <p className="flex items-center gap-2 font-bold text-sm text-alert-strong">
+                  <PhoneCall className="w-4 h-4" aria-hidden="true" />
+                  Medical emergency?
+                </p>
+                <p className="text-sm text-alert-strong">
+                  Call our 24/7 trauma desk on{' '}
+                  <a href="tel:876256876" className={`rounded-sm font-bold underline underline-offset-2 ${FOCUS_RING}`}>876-256-876</a>{' '}
+                  or come to the ground-floor emergency entrance.
                 </p>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </section>

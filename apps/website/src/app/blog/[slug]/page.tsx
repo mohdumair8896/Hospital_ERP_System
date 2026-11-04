@@ -7,6 +7,7 @@ import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
 import EmergencyFAB from '../../../components/EmergencyFAB';
 import { BLOG_POSTS, DOCTORS } from '../../../data/hospitalData';
+import { ReadingProgress } from '../../../components/content/ReadingProgress';
 import { 
   ChevronRight, 
   Clock, 
@@ -33,7 +34,7 @@ export function generateMetadata({ params }: Props): Metadata {
   const post = BLOG_POSTS.find((p) => p.slug === params.slug);
   if (!post) return { title: 'Article Not Found' };
   return {
-    title: `${post.title} | ProHealth Health Insights`,
+    title: `${post.title} | Health Insights`,
     description: post.excerpt,
   };
 }
@@ -48,6 +49,7 @@ export default function BlogPostReaderPage({ params }: Props) {
     <div className="min-h-screen flex flex-col bg-white">
       <TopEmergencyBar />
       <Navbar />
+      <ReadingProgress targetId="article-content" />
 
       {/* Article Header */}
       <header className="relative py-16 overflow-hidden" style={{background: 'linear-gradient(135deg, #EAF2F9 0%, #F0F6FB 50%, #FFFFFF 100%)'}}>
@@ -61,7 +63,7 @@ export default function BlogPostReaderPage({ params }: Props) {
             <span className="text-[#1F5084]">{post.category}</span>
           </nav>
 
-          <span className="inline-block text-[10px] uppercase font-bold tracking-widest text-[#1F5084] bg-[#1F5084]/10 px-2.5 py-1 rounded border border-[#1F5084]/20">
+          <span className="inline-block text-xs uppercase font-bold tracking-widest text-[#1F5084] bg-[#1F5084]/10 px-2.5 py-1 rounded border border-[#1F5084]/20">
             {post.category}
           </span>
 
@@ -83,7 +85,7 @@ export default function BlogPostReaderPage({ params }: Props) {
       </header>
 
       {/* Main Reader Content */}
-      <main className="max-w-5xl mx-auto px-6 lg:px-8 py-14 flex-1 w-full space-y-10">
+      <main id="article-content" className="max-w-5xl mx-auto px-6 lg:px-8 py-14 flex-1 w-full space-y-10">
         {/* Cover Photo */}
         <div className="rounded-3xl overflow-hidden shadow-xl border border-slate-200">
           <img
@@ -133,7 +135,7 @@ export default function BlogPostReaderPage({ params }: Props) {
               className="w-24 h-24 rounded-2xl object-cover shadow-lg border border-white/20"
             />
             <div className="flex-1 space-y-2 text-center sm:text-left">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-sky-200">
+              <div className="text-xs uppercase font-bold tracking-wider text-sky-200">
                 Author &amp; Specialist
               </div>
               <h3 className="text-lg font-bold font-display">{authorDoc.title}</h3>

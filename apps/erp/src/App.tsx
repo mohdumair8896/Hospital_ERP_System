@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from "react"
-import {
-  Stethoscope,
-  ClipboardList,
-  Activity,
-  Building2,
-  ChevronRight,
-  Database,
-  AlertTriangle,
-  Users,
-  Network,
-  LogOut,
-  ShieldCheck,
-} from "lucide-react"
+import { Building2, ChevronRight, AlertTriangle, LogOut, ShieldCheck } from "lucide-react"
 import AuditLogViewer from "./components/AuditLogViewer"
 import ClinicalWorkbench from "./components/ClinicalWorkbench"
 import ReceptionDesk from "./components/ReceptionDesk"
@@ -21,7 +9,11 @@ import IntegrationPipeline from "./components/IntegrationPipeline"
 import LoginScreen from "./components/LoginScreen"
 import { UserSession } from "@hospital/contracts"
 import { Toaster, toast } from "sonner"
-import { API_BASE_URL } from "@/lib/api"
+import { apiFetch, AUTH_TOKEN_KEY } from "@/lib/api"
+import { NAV_BY_TAB, defaultTabForRole, tabsForRole, validTab } from "@/components/shell/navigation"
+import { clearUrlParams, navigateTo, useUrlParam } from "@/components/shell/url-state"
+import { CommandPalette } from "@/components/shell/CommandPalette"
+import { NotificationsPopover, type GatewayStatus } from "@/components/shell/NotificationsPopover"
 
 // UI Component Integrations
 import {
@@ -43,7 +35,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -55,14 +46,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/base/buttons/button"
 
-type Tab =
-  | "STAFF_ADMIN"
-  | "INTEGRATION"
-  | "AUDIT"
-  | "CLINICAL"
-  | "RECEPTION"
-  | "ANALYTICS"
-
 export default function App() {
   const [currentSession, setCurrentSession] = useState<UserSession | null>(() => {
     try {
@@ -72,36 +55,34 @@ export default function App() {
     return null
   })
 
-  const [activeTab, setActiveTab] = useState<Tab>("STAFF_ADMIN")
-  const [gatewayStatus, setGatewayStatus] = useState<any>(null)
+  const [gatewayStatus, setGatewayStatus] = useState<GatewayStatus | null>(null)
 
-  // Handle successful login
+  // The active screen lives in the URL (?tab=), validated against the role's screens.
+  // Without a valid ?tab the role's default screen is used, including after a reload.
+  const urlTab = useUrlParam("tab")
+  const role = currentSession?.role
+  const activeTab = role ? validTab(urlTab, role) ?? defaultTabForRole(role) : null
+
+  useEffect(() => {
+    if (role && urlTab !== activeTab && activeTab) navigateTo(activeTab)
+  }, [role, urlTab, activeTab])
+
+  // Handle successful login (the effect above then applies the role's default tab)
   const handleLoginSuccess = (session: UserSession, token: string) => {
     setCurrentSession(session)
     try {
       localStorage.setItem("prohealth_erp_session", JSON.stringify(session))
-      localStorage.setItem("prohealth_erp_token", token)
+      localStorage.setItem(AUTH_TOKEN_KEY, token)
     } catch {}
-
-    if (session.role === "ADMIN") {
-      setActiveTab("STAFF_ADMIN")
-    } else if (session.role === "DOCTOR") {
-      setActiveTab("CLINICAL")
-    } else if (session.role === "RECEPTIONIST" || session.role === "NURSE") {
-      setActiveTab("RECEPTION")
-    } else if (session.role === "COMPLIANCE_AUDITOR") {
-      setActiveTab("AUDIT")
-    } else {
-      setActiveTab("INTEGRATION")
-    }
   }
 
   // Handle Sign Out
   const handleSignOut = () => {
     try {
       localStorage.removeItem("prohealth_erp_session")
-      localStorage.removeItem("prohealth_erp_token")
+      localStorage.removeItem(AUTH_TOKEN_KEY)
     } catch {}
+    clearUrlParams()
     setCurrentSession(null)
     toast.info("Signed out of ERP session.")
   }
@@ -110,7 +91,7 @@ export default function App() {
   useEffect(() => {
     const check = () => {
       if (typeof document !== "undefined" && document.hidden) return
-      fetch(`${API_BASE_URL}/api/v1/gateway/status`)
+      apiFetch("/api/v1/gateway/status")
         .then((res) => res.json())
         .then((data) => setGatewayStatus(data))
         .catch(() => setGatewayStatus({ gateway: "OFFLINE", services: [] }))
@@ -129,7 +110,7 @@ export default function App() {
   }, [])
 
   // If unauthenticated, display dedicated RBAC Login Screen
-  if (!currentSession) {
+  if (!currentSession || !activeTab) {
     return (
       <>
         <Toaster position="bottom-right" richColors />
@@ -138,12 +119,10 @@ export default function App() {
     )
   }
 
-  const isAdmin = currentSession.role === "ADMIN"
-  const isDoctor = currentSession.role === "DOCTOR"
-  const isReceptionist = currentSession.role === "RECEPTIONIST" || currentSession.role === "NURSE"
-  const isAuditor = currentSession.role === "COMPLIANCE_AUDITOR"
-
+  const visibleTabs = tabsForRole(currentSession.role)
+  const activeNav = NAV_BY_TAB[activeTab]
   const isHealthy = gatewayStatus?.gateway === "ONLINE"
+  const networkLabel = !gatewayStatus ? "Checking network" : isHealthy ? "Clinical Network Online" : "Network Alert"
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -153,7 +132,7 @@ export default function App() {
       <Sidebar side="left" collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center gap-3 px-2 py-1">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-700/20 shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs shrink-0">
               <Building2 className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
@@ -173,103 +152,34 @@ export default function App() {
         </SidebarHeader>
 
         <SidebarContent>
-          {/* Main Navigation Group */}
+          {/* Main Navigation Group (role-gated, see components/shell/navigation.ts) */}
           <SidebarGroup>
             <SidebarGroupLabel>Operations &amp; Clinical</SidebarGroupLabel>
             <SidebarMenu>
-              {/* Admin Centralized Staff Provisioning Center */}
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "STAFF_ADMIN"}
-                    onClick={() => setActiveTab("STAFF_ADMIN")}
-                  >
-                    <Users className="w-4 h-4 shrink-0 text-blue-600" />
-                    <span className="truncate">Staff Directory &amp; Provisioning</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge>Central</SidebarMenuBadge>
-                </SidebarMenuItem>
-              )}
-
-              {/* Clinical Integration Pipeline (HL7 / FHIR) */}
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "INTEGRATION"}
-                    onClick={() => setActiveTab("INTEGRATION")}
-                  >
-                    <Network className="w-4 h-4 shrink-0 text-emerald-600" />
-                    <span className="truncate">Clinical Pipeline (HL7/FHIR)</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge>v2.5</SidebarMenuBadge>
-                </SidebarMenuItem>
-              )}
-
-              {/* Clinical Workbench */}
-              {(isAdmin || isDoctor) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "CLINICAL"}
-                    onClick={() => setActiveTab("CLINICAL")}
-                  >
-                    <Stethoscope className="w-4 h-4 shrink-0 text-teal-600" />
-                    <span className="truncate">Clinical Workbench</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge>EHR</SidebarMenuBadge>
-                </SidebarMenuItem>
-              )}
-
-              {/* Reception Desk */}
-              {(isAdmin || isReceptionist) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "RECEPTION"}
-                    onClick={() => setActiveTab("RECEPTION")}
-                  >
-                    <ClipboardList className="w-4 h-4 shrink-0 text-amber-600" />
-                    <span className="truncate">Reception &amp; Triage</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge>OPD</SidebarMenuBadge>
-                </SidebarMenuItem>
-              )}
-
-              {/* Audit Log & Compliance */}
-              {(isAdmin || isAuditor) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "AUDIT"}
-                    onClick={() => setActiveTab("AUDIT")}
-                  >
-                    <Database className="w-4 h-4 shrink-0 text-indigo-600" />
-                    <span className="truncate">Audit Log &amp; Integrity</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuBadge>HIPAA</SidebarMenuBadge>
-                </SidebarMenuItem>
-              )}
-
-              {/* Analytics */}
-              {(isAdmin || isAuditor) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={activeTab === "ANALYTICS"}
-                    onClick={() => setActiveTab("ANALYTICS")}
-                  >
-                    <Activity className="w-4 h-4 shrink-0 text-purple-600" />
-                    <span className="truncate">Analytics &amp; Reports</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
+              {visibleTabs.map((tab) => {
+                const item = NAV_BY_TAB[tab]
+                const isActive = activeTab === tab
+                return (
+                  <SidebarMenuItem key={tab}>
+                    <SidebarMenuButton isActive={isActive} onClick={() => navigateTo(tab)} title={item.label}>
+                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "" : item.iconClass}`} aria-hidden="true" />
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter className="border-t p-3">
           <div className="group-data-[collapsible=icon]:hidden flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="flex items-center gap-1.5 font-medium text-foreground">
+              <ShieldCheck className="w-4 h-4 text-care shrink-0" />
               <span>EHR Secured</span>
             </span>
-            <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">
+            <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
               HIPAA
             </span>
           </div>
@@ -281,44 +191,56 @@ export default function App() {
       {/* Main Application Inset */}
       <SidebarInset className="flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         {/* Top Floating App Bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-card/95 px-4 backdrop-blur-md shadow-xs">
-          <SidebarTrigger />
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur-md shadow-xs sm:px-4">
+          <SidebarTrigger className="shrink-0" />
 
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
           {/* Breadcrumb / Title */}
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span>Hospital ERP</span>
-            <ChevronRight className="h-3.5 w-3.5 opacity-50" />
-            <span className="font-semibold text-foreground">
-              {activeTab === "STAFF_ADMIN" && "Staff Administration & Credential Provisioning Center"}
-              {activeTab === "INTEGRATION" && "Clinical Integration Pipeline (HL7 v2.5 / FHIR R4)"}
-              {activeTab === "AUDIT" && "HIPAA Cryptographic Audit Trail"}
-              {activeTab === "CLINICAL" && "Clinical Encounter Workbench"}
-              {activeTab === "RECEPTION" && "Reception & Patient Triage"}
-              {activeTab === "ANALYTICS" && "Hospital Intelligence & Analytics"}
+          <div className="flex min-w-0 flex-1 items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="hidden shrink-0 2xl:inline">Hospital ERP</span>
+            <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 opacity-50 2xl:block" aria-hidden="true" />
+            <span className="truncate font-semibold text-foreground" title={activeNav.title}>
+              <span className="2xl:hidden">{activeNav.label}</span>
+              <span className="hidden 2xl:inline">{activeNav.title}</span>
             </span>
           </div>
 
           {/* Right Header Actions */}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
+            <CommandPalette role={currentSession.role} activeTab={activeTab} onSignOut={handleSignOut} />
+            <NotificationsPopover
+              gatewayStatus={gatewayStatus}
+              userId={currentSession.id}
+              showAppointments={visibleTabs.includes("RECEPTION")}
+            />
+
             {/* Hospital Facility & Clinical Network Status */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 border border-border/70 px-3 py-1.5 rounded-lg shadow-2xs">
-              <span className={`h-2 w-2 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+            <div
+              className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 border border-border/70 px-3 py-1.5 rounded-lg shadow-2xs"
+              title={networkLabel}
+            >
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 rounded-full ${!gatewayStatus ? "bg-muted-foreground" : isHealthy ? "bg-care motion-safe:animate-pulse" : "bg-alert"}`}
+              />
               <span className="font-semibold text-foreground">Main Campus</span>
-              <span className="text-muted-foreground/50">•</span>
-              <span className="text-[11px] font-medium text-emerald-700 hidden sm:inline">
-                {isHealthy ? "Clinical Network Online" : "Network Alert"}
+              <span className="sr-only 2xl:not-sr-only 2xl:flex 2xl:items-center 2xl:gap-2">
+                <span className="text-muted-foreground/50" aria-hidden="true">•</span>
+                <span className={`text-[11px] font-medium ${isHealthy ? "text-care" : "text-alert"}`}>{networkLabel}</span>
               </span>
             </div>
 
             {/* Authenticated Staff Identity Profile */}
-            <div className="flex items-center gap-2.5 bg-muted/50 border border-border/80 rounded-xl px-3 py-1.5 shadow-2xs">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
+            <div
+              className="flex items-center gap-2.5 bg-muted/50 border border-border/80 rounded-xl px-1.5 py-1.5 shadow-2xs xl:px-3"
+              title={`${currentSession.name} (${currentSession.role.replace(/_/g, " ")})`}
+            >
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0" aria-hidden="true">
                 {currentSession.name.charAt(0)}
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-foreground leading-tight truncate max-w-[140px] sm:max-w-[180px]">
+              <div className="sr-only xl:not-sr-only xl:flex xl:flex-col text-left">
+                <span className="text-xs font-bold text-foreground leading-tight truncate max-w-[120px] 2xl:max-w-[180px]">
                   {currentSession.name}
                 </span>
                 <span className="text-[10px] font-mono font-semibold text-primary uppercase tracking-wider leading-none mt-0.5">
@@ -329,13 +251,14 @@ export default function App() {
 
             {/* Sign Out Button in Header */}
             <button
+              type="button"
               onClick={handleSignOut}
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold border border-transparent hover:border-destructive/20"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold border border-transparent hover:border-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Sign Out of Session"
               aria-label="Sign Out"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
+              <span className="hidden 2xl:inline">Sign Out</span>
             </button>
 
             {/* Emergency Break-Glass Alert Dialog */}
@@ -352,21 +275,13 @@ export default function App() {
                   <AlertDialogMedia className="bg-destructive/10 text-destructive">
                     <AlertTriangle className="h-5 w-5" />
                   </AlertDialogMedia>
-                  <AlertDialogTitle>Trigger Break-Glass Override?</AlertDialogTitle>
+                  <AlertDialogTitle>Break-glass override is not available yet</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will grant temporary emergency super-auditor clearance to bypass standard role restrictions. All actions during this session are permanently recorded in the SHA-256 cryptographic audit chain.
+                    Emergency access overrides (reason prompt, time-boxed access and an audited compliance review) are on the roadmap. In this build nothing changes your access and no audit entry is written.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    variant="destructive"
-                    onClick={() => {
-                      toast.error("Emergency Break-Glass Override Activated. Session flagged in audit log.")
-                    }}
-                  >
-                    Activate Override
-                  </AlertDialogAction>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

@@ -34,15 +34,30 @@ async function bootstrap() {
 
   // Query audit records with filters
   app.get('/api/v1/audit/records', async (req: Request, res: Response) => {
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : 50;
+    const offset = req.query.offset ? Number(req.query.offset) : 0;
+
+    // Reject bad input up front: a failed DB cast would otherwise fall back to the local store.
+    const invalid: string[] = [];
+    if (startDate && Number.isNaN(Date.parse(startDate))) invalid.push('startDate');
+    if (endDate && Number.isNaN(Date.parse(endDate))) invalid.push('endDate');
+    if (!Number.isInteger(limit) || limit < 1 || limit > 1000) invalid.push('limit (1-1000)');
+    if (!Number.isInteger(offset) || offset < 0) invalid.push('offset');
+    if (invalid.length) {
+      return res.status(400).json({ error: `Invalid audit query parameters: ${invalid.join(', ')}` });
+    }
+
     const query: AuditSearchQuery = {
       actorId: req.query.actorId as string | undefined,
       action: req.query.action as any,
       resourceType: req.query.resourceType as any,
       resourceId: req.query.resourceId as string | undefined,
-      startDate: req.query.startDate as string | undefined,
-      endDate: req.query.endDate as string | undefined,
-      limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 50,
-      offset: req.query.offset ? parseInt(req.query.offset as string, 10) : 0,
+      startDate,
+      endDate,
+      limit,
+      offset,
     };
 
     const result = await auditDb.query(query);
